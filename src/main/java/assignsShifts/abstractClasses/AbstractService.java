@@ -15,18 +15,18 @@ public abstract class AbstractService<T extends Model> {
     return this.repository.findAll();
   }
 
-  public Optional<T> create(T shiftType) {
-    shiftType.setId(UUID.randomUUID().toString());
+  public Optional<T> create(T entity) {
+    entity.setId(UUID.randomUUID().toString());
 
-    return this.repository.save(shiftType);
+    return this.repository.save(entity);
   }
 
-  public Optional<T> update(T shiftType) {
-    if (this.repository.findById(shiftType.getId()).isEmpty()) {
+  public Optional<T> update(T entity) {
+    if (this.repository.findById(entity.getId()).isEmpty()) {
       return Optional.empty();
     }
 
-    return this.repository.save(shiftType);
+    return this.repository.save(entity);
   }
 
   public Optional<DeleteResult> delete(String id) {
