@@ -33,8 +33,15 @@ public class User extends Model {
   private boolean active;
   //  @DBRef private Shift mostRecentShift;
 
-
-  public User(String id, @NonNull String fullName, List<UserType> types, Map<ShiftType, Integer> numShifts, AuthorizationData authorizationData, @NonNull List<Constraint> constraints, @NonNull List<Shift> shifts, boolean active) {
+  public User(
+      String id,
+      @NonNull String fullName,
+      List<UserType> types,
+      Map<ShiftType, Integer> numShifts,
+      AuthorizationData authorizationData,
+      @NonNull List<Constraint> constraints,
+      @NonNull List<Shift> shifts,
+      boolean active) {
     super(id);
     this.fullName = fullName;
     this.types = types;
@@ -52,7 +59,7 @@ public class User extends Model {
   public void addShift(Shift shiftToAdd) {
     this.shifts.add(shiftToAdd);
     Integer currentNum = this.numShifts.getOrDefault(shiftToAdd.getType(), 0);
-    this.numShifts.put(shiftToAdd.getType(), currentNum + shiftToAdd.getNumDays());
+    this.numShifts.put(shiftToAdd.getType(), currentNum + 1);
 
     //    if (this.mostRecentShift == null || ) {
     //      this.mostRecentShift = shiftToAdd;
@@ -75,18 +82,21 @@ public class User extends Model {
   }
 
   public boolean isEnoughDaysSinceLastShift(ShiftType shiftType, Calendar startDate) {
-    Optional<Shift> mostRecentShift =
-        this.getShifts().stream()
-            .filter(shift -> shiftType.equals(shift.getType()))
-            .max(Shift::compareByDate);
+    Optional<Shift> mostRecentShift = getMostRecentShift(shiftType);
 
     if (mostRecentShift.isEmpty()) {
       return true;
     }
 
-    return Duration.between(mostRecentShift.get().getEndDate().toInstant(), startDate.toInstant())
+    return Duration.between(mostRecentShift.get().getStartDate().toInstant(), startDate.toInstant())
             .toDays()
         > shiftType.getMinBreak();
+  }
+
+  public Optional<Shift> getMostRecentShift(ShiftType shiftType) {
+    return this.getShifts().stream()
+        .filter(shift -> shiftType.equals(shift.getType()))
+        .max(Shift::compareByDate);
   }
 
   public List<UserType> getOverlappingTypes(ShiftType shiftType) {
@@ -117,14 +127,18 @@ public class User extends Model {
     Calendar end = (Calendar) start.clone();
     end.add(Calendar.DATE, 7);
 
-    List<Constraint> upcomingConstraints = this.getConstraints().stream().filter(constraint -> {
-      Calendar constraintStart = Calendar.getInstance();
-      constraintStart.setTime(constraint.getStartDate());
-      Calendar constraintEnd = Calendar.getInstance();
-      constraintEnd.setTime(constraint.getEndDate());
+    List<Constraint> upcomingConstraints =
+        this.getConstraints().stream()
+            .filter(
+                constraint -> {
+                  Calendar constraintStart = Calendar.getInstance();
+                  constraintStart.setTime(constraint.getStartDate());
+                  Calendar constraintEnd = Calendar.getInstance();
+                  constraintEnd.setTime(constraint.getEndDate());
 
-      return isDateInRange(constraintStart, constraintEnd, start, end);
-    }).toList();
+                  return isDateInRange(constraintStart, constraintEnd, start, end);
+                })
+            .toList();
 
     return upcomingConstraints.size();
   }
@@ -151,16 +165,6 @@ public class User extends Model {
         .sum();
   }
 
-  @Data
-  @AllArgsConstructor
-  public static class AuthorizationData {
-    @NonNull private String username;
-    @NonNull private String password;
-    @NonNull private String email;
-    @NonNull private String phone;
-    @NonNull private UserPermissionsEnum userPermissions;
-  }
-
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -172,5 +176,15 @@ public class User extends Model {
   @Override
   public int hashCode() {
     return Objects.hash(id);
+  }
+
+  @Data
+  @AllArgsConstructor
+  public static class AuthorizationData {
+    @NonNull private String username;
+    @NonNull private String password;
+    @NonNull private String email;
+    @NonNull private String phone;
+    @NonNull private UserPermissionsEnum userPermissions;
   }
 }

@@ -1,6 +1,6 @@
 package assignsShifts.entities.shift.type;
 
-import assignsShifts.repository.AbstractRepository;
+import assignsShifts.abstractClasses.AbstractRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository

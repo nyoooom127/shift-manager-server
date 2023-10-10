@@ -1,6 +1,7 @@
 package assignsShifts.entities.week.entity;
 
 import assignsShifts.JWT.VerifierRequest;
+import assignsShifts.models.enums.UserPermissionsEnum;
 import com.mongodb.client.result.DeleteResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -24,9 +25,19 @@ public class WeekController {
     return ResponseEntity.ok(this.weekService.findAll());
   }
 
+  @PostMapping(value = "/calculate")
+  public ResponseEntity<Week> calculateWeek(
+      @RequestBody Week week, @RequestHeader("token") String token) {
+    if (!verifierRequest.isVerify(token, UserPermissionsEnum.ADMIN)) {
+      return ResponseEntity.ok().build();
+    }
+
+    return ResponseEntity.ok(this.weekService.calculateWeek(week));
+  }
+
   @PostMapping(value = "/create")
   public ResponseEntity<Week> createWeek(
-          @RequestBody Week week, @RequestHeader("token") String token) {
+      @RequestBody Week week, @RequestHeader("token") String token) {
     if (!verifierRequest.isAdmin(token)) {
       return ResponseEntity.ok().build();
     }
@@ -42,7 +53,7 @@ public class WeekController {
 
   @PostMapping(value = "/update")
   public ResponseEntity<Week> updateWeek(
-          @RequestBody Week week, @RequestHeader("token") String token) {
+      @RequestBody Week week, @RequestHeader("token") String token) {
     if (!verifierRequest.isAdmin(token)) {
       return ResponseEntity.ok().build();
     }

@@ -1,6 +1,6 @@
 package assignsShifts.entities.constraint.type;
 
-import assignsShifts.services.AbstractService;
+import assignsShifts.abstractClasses.AbstractService;
 import org.springframework.stereotype.Service;
 
 @Service

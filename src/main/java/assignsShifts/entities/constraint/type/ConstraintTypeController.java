@@ -31,7 +31,8 @@ public class ConstraintTypeController {
       return ResponseEntity.ok().build();
     }
 
-    Optional<ConstraintType> optionalConstraintType = this.constraintTypeService.create(constraintType);
+    Optional<ConstraintType> optionalConstraintType =
+        this.constraintTypeService.create(constraintType);
 
     if (optionalConstraintType.isEmpty()) {
       return ResponseEntity.ok().build();
@@ -47,7 +48,8 @@ public class ConstraintTypeController {
       return ResponseEntity.ok().build();
     }
 
-    Optional<ConstraintType> optionalConstraintType = this.constraintTypeService.update(constraintType);
+    Optional<ConstraintType> optionalConstraintType =
+        this.constraintTypeService.update(constraintType);
 
     if (optionalConstraintType.isEmpty()) {
       return ResponseEntity.ok().build();

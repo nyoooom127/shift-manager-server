@@ -1,7 +1,9 @@
 package assignsShifts.JWT;
 
+import assignsShifts.entities.user.entity.User;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -16,11 +18,13 @@ public class JWTTokenCreator {
   @Value("${JWT.token}")
   private String JWTToken;
 
-  public String createJWTToken(String userId) {
+  @Autowired private Gson gson;
+
+  public String createJWTToken(User user) {
     return JWT.create()
         .withIssuer(JWTToken)
         .withSubject(JWTToken + " Details")
-        .withClaim("userId", userId)
+        .withClaim("userId", gson.toJson(user))
         .withIssuedAt(new Date(System.currentTimeMillis()))
         .withExpiresAt(new Date(System.currentTimeMillis() + (86400L * 1000L)))
         .withJWTId(UUID.randomUUID().toString())

@@ -3,6 +3,7 @@ package assignsShifts.entities.user.entity;
 import assignsShifts.JWT.VerifierRequest;
 import assignsShifts.models.enums.UserPermissionsEnum;
 import com.mongodb.client.result.DeleteResult;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +24,18 @@ public class UserController {
     }
 
     return ResponseEntity.ok(this.userService.findAll().stream().map(User::hideAuthData).toList());
+  }
+
+  @PostMapping("/login")
+  public ResponseEntity<String> login(@RequestBody LoginRequest loginRequest) {
+    Optional<String> optionalTokenString =
+        this.userService.logIn(loginRequest.getUserName(), loginRequest.getPassword());
+
+    if (optionalTokenString.isEmpty()) {
+      return ResponseEntity.ok().build();
+    }
+
+    return ResponseEntity.ok(optionalTokenString.get());
   }
 
   @PostMapping(value = "/create")
@@ -71,5 +84,11 @@ public class UserController {
     }
 
     return ResponseEntity.ok(optionalDeleteResult.get());
+  }
+
+  @Getter
+  public static class LoginRequest {
+    private String userName;
+    private String password;
   }
 }

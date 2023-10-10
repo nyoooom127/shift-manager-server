@@ -26,7 +26,7 @@ public class ShiftController {
 
   @PostMapping(value = "/create")
   public ResponseEntity<Shift> createShift(
-          @RequestBody Shift shift, @RequestHeader("token") String token) {
+      @RequestBody Shift shift, @RequestHeader("token") String token) {
     if (!verifierRequest.isAdmin(token)) {
       return ResponseEntity.ok().build();
     }
@@ -42,7 +42,7 @@ public class ShiftController {
 
   @PostMapping(value = "/update")
   public ResponseEntity<Shift> updateShift(
-          @RequestBody Shift shift, @RequestHeader("token") String token) {
+      @RequestBody Shift shift, @RequestHeader("token") String token) {
     if (!verifierRequest.isAdmin(token)) {
       return ResponseEntity.ok().build();
     }

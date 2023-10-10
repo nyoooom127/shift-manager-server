@@ -1,9 +1,9 @@
 package assignsShifts.entities.user.entity;
 
+import assignsShifts.abstractClasses.AbstractService;
 import assignsShifts.entities.constraint.entity.Constraint;
 import assignsShifts.entities.shift.entity.Shift;
 import assignsShifts.entities.user.type.UserType;
-import assignsShifts.services.AbstractService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

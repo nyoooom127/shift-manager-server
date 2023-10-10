@@ -7,40 +7,47 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.SimpleMongoClientDatabaseFactory;
+import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 
 @Configuration
 public class DBConnectionConfiguration {
-    @Value("${assigns.shifts.database.address:}")
-    private String databaseAddress;
+  @Value("${assigns.shifts.database.address:}")
+  private String databaseAddress;
 
-    @Value("${assigns.shifts.database.port:}")
-    private String databasePort;
+  @Value("${assigns.shifts.database.port:}")
+  private String databasePort;
 
-    @Value("${assigns.shifts.database.database:}")
-    private String databaseDatabase;
+  @Value("${assigns.shifts.database.database:}")
+  private String databaseDatabase;
 
-    private void validateDataBaseParams() throws ValidationParamException {
-        if (Strings.isBlank(databaseAddress)) {
-            throw new ValidationParamException("assigns.shifts.database.address");
-        }
-
-        if (Strings.isBlank(databasePort)) {
-            throw new ValidationParamException("assigns.shifts.database.port");
-        }
-
-        if (Strings.isBlank(databaseDatabase)) {
-            throw new ValidationParamException("assigns.shifts.database.database");
-        }
-    }
-    
-    private String getConnectionString() throws ValidationParamException {
-        this.validateDataBaseParams();
-        
-        return String.format("mongodb://%s:%s/%s", this.databaseAddress, this.databasePort, this.databaseDatabase);
+  private void validateDataBaseParams() throws ValidationParamException {
+    if (Strings.isBlank(databaseAddress)) {
+      throw new ValidationParamException("assigns.shifts.database.address");
     }
 
-    @Bean
-    public MongoTemplate mongoTemplate() throws ValidationParamException {
-        return new MongoTemplate(new SimpleMongoClientDatabaseFactory(getConnectionString()));
+    if (Strings.isBlank(databasePort)) {
+      throw new ValidationParamException("assigns.shifts.database.port");
     }
+
+    if (Strings.isBlank(databaseDatabase)) {
+      throw new ValidationParamException("assigns.shifts.database.database");
+    }
+  }
+
+  private String getConnectionString() throws ValidationParamException {
+    this.validateDataBaseParams();
+
+    return String.format(
+        "mongodb://%s:%s/%s", this.databaseAddress, this.databasePort, this.databaseDatabase);
+  }
+
+  @Bean
+  public MongoTemplate mongoTemplate() throws ValidationParamException {
+    return new MongoTemplate(new SimpleMongoClientDatabaseFactory(getConnectionString()));
+  }
+
+//  @Bean
+//  MongoMappingContext springDataMongoMappingContext() {
+//    return new MongoMappingContext();
+//  }
 }

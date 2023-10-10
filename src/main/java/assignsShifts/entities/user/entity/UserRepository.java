@@ -1,11 +1,11 @@
 package assignsShifts.entities.user.entity;
 
 import assignsShifts.JWT.JWTTokenCreator;
+import assignsShifts.abstractClasses.AbstractRepository;
 import assignsShifts.entities.constraint.entity.Constraint;
 import assignsShifts.entities.shift.entity.Shift;
 import assignsShifts.entities.user.type.UserType;
 import assignsShifts.models.enums.UserPermissionsEnum;
-import assignsShifts.repository.AbstractRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -24,7 +24,6 @@ public class UserRepository extends AbstractRepository<User> {
 
     return this.mongoTemplate.find(query, getType());
   }
-
 
   public Optional<String> logIn(String userName, String password) {
     Query query =

@@ -1,8 +1,8 @@
 package assignsShifts.entities.shift.type;
 
-import assignsShifts.models.Model;
 import assignsShifts.entities.user.entity.User;
 import assignsShifts.entities.user.type.UserType;
+import assignsShifts.models.Model;
 import assignsShifts.models.enums.ShiftSchedulingLogicEnum;
 import com.mongodb.lang.NonNull;
 import lombok.AllArgsConstructor;
@@ -17,18 +17,26 @@ import java.util.Objects;
 @AllArgsConstructor
 @Document("shiftTypes")
 public class ShiftType extends Model {
-//  @Id private String id;
+  //  @Id private String id;
   @NonNull private String name;
   @DBRef @NonNull private List<UserType> allowedUserTypes;
-//  @NonNull private Duration defaultLength;
+  //  @NonNull private Duration defaultLength;
   @NonNull private double score;
   private int minBreak;
   private boolean hasWeekends;
-//  private int numShiftsPerWeek;
+  //  private int numShiftsPerWeek;
   private ShiftSchedulingLogicEnum schedulingLogic;
   @DBRef private List<User> rotationUsers;
 
-  public ShiftType(String id, @NonNull String name, @NonNull List<UserType> allowedUserTypes, double score, int minBreak, boolean hasWeekends, ShiftSchedulingLogicEnum schedulingLogic, List<User> rotationUsers) {
+  public ShiftType(
+      String id,
+      @NonNull String name,
+      @NonNull List<UserType> allowedUserTypes,
+      double score,
+      int minBreak,
+      boolean hasWeekends,
+      ShiftSchedulingLogicEnum schedulingLogic,
+      List<User> rotationUsers) {
     super(id);
     this.name = name;
     this.allowedUserTypes = allowedUserTypes;

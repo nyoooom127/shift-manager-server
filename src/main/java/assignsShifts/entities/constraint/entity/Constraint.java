@@ -1,8 +1,8 @@
 package assignsShifts.entities.constraint.entity;
 
 import assignsShifts.entities.constraint.type.ConstraintType;
-import assignsShifts.models.Model;
 import assignsShifts.entities.user.entity.User;
+import assignsShifts.models.Model;
 import com.mongodb.lang.NonNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,7 +25,13 @@ public class Constraint extends Model {
   private String comment;
   @DBRef @NonNull private User user;
 
-  public Constraint(String id, ConstraintType type, @NonNull Date startDate, @NonNull Date endDate, String comment, @NonNull User user) {
+  public Constraint(
+      String id,
+      ConstraintType type,
+      @NonNull Date startDate,
+      @NonNull Date endDate,
+      String comment,
+      @NonNull User user) {
     super(id);
     this.type = type;
     this.startDate = startDate;

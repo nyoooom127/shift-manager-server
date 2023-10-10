@@ -26,7 +26,7 @@ public class ConstraintController {
 
   @PostMapping(value = "/create")
   public ResponseEntity<Constraint> createConstraint(
-          @RequestBody Constraint constraint, @RequestHeader("token") String token) {
+      @RequestBody Constraint constraint, @RequestHeader("token") String token) {
     if (!verifierRequest.isAdmin(token)) {
       return ResponseEntity.ok().build();
     }
@@ -42,7 +42,7 @@ public class ConstraintController {
 
   @PostMapping(value = "/update")
   public ResponseEntity<Constraint> updateConstraint(
-          @RequestBody Constraint constraint, @RequestHeader("token") String token) {
+      @RequestBody Constraint constraint, @RequestHeader("token") String token) {
     if (!verifierRequest.isAdmin(token)) {
       return ResponseEntity.ok().build();
     }

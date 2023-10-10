@@ -21,7 +21,13 @@ public class UserType extends Model {
   private boolean needsSupervision;
   private boolean canSupervise;
 
-  public UserType(String id, String name, @NonNull List<ShiftType> allowedShiftTypes, boolean autoScheduled, boolean needsSupervision, boolean canSupervise) {
+  public UserType(
+      String id,
+      String name,
+      @NonNull List<ShiftType> allowedShiftTypes,
+      boolean autoScheduled,
+      boolean needsSupervision,
+      boolean canSupervise) {
     super(id);
     this.name = name;
     this.allowedShiftTypes = allowedShiftTypes;

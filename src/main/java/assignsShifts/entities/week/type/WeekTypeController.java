@@ -26,7 +26,7 @@ public class WeekTypeController {
 
   @PostMapping(value = "/create")
   public ResponseEntity<WeekType> createWeekType(
-          @RequestBody WeekType weekType, @RequestHeader("token") String token) {
+      @RequestBody WeekType weekType, @RequestHeader("token") String token) {
     if (!verifierRequest.isAdmin(token)) {
       return ResponseEntity.ok().build();
     }
@@ -42,7 +42,7 @@ public class WeekTypeController {
 
   @PostMapping(value = "/update")
   public ResponseEntity<WeekType> updateWeekType(
-          @RequestBody WeekType weekType, @RequestHeader("token") String token) {
+      @RequestBody WeekType weekType, @RequestHeader("token") String token) {
     if (!verifierRequest.isAdmin(token)) {
       return ResponseEntity.ok().build();
     }
