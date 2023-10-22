@@ -16,6 +16,7 @@ public class WeekController {
   @Autowired private WeekService weekService;
   @Autowired private VerifierRequest verifierRequest;
 
+  @CrossOrigin
   @GetMapping
   public ResponseEntity<List<Week>> findAll(@RequestHeader("token") String token) {
     if (!verifierRequest.isVerify(token)) {
@@ -25,7 +26,8 @@ public class WeekController {
     return ResponseEntity.ok(this.weekService.findAll());
   }
 
-  @PostMapping(value = "/calculate")
+  @CrossOrigin
+  @PostMapping(value = "/calculate")//, consumes = {"application/json;charset=UTF-8"})
   public ResponseEntity<Week> calculateWeek(
       @RequestBody Week week, @RequestHeader("token") String token) {
     if (!verifierRequest.isVerify(token, UserPermissionsEnum.ADMIN)) {
@@ -35,7 +37,8 @@ public class WeekController {
     return ResponseEntity.ok(this.weekService.calculateWeek(week));
   }
 
-  @PostMapping(value = "/create")
+  @CrossOrigin
+  @PostMapping(value = "/create")//, consumes = {"application/json;charset=UTF-8"})
   public ResponseEntity<Week> createWeek(
       @RequestBody Week week, @RequestHeader("token") String token) {
     if (!verifierRequest.isAdmin(token)) {
@@ -51,7 +54,8 @@ public class WeekController {
     return ResponseEntity.ok(optionalWeek.get());
   }
 
-  @PostMapping(value = "/update")
+  @CrossOrigin
+  @PostMapping(value = "/update")//, consumes = {"application/json;charset=UTF-8"})
   public ResponseEntity<Week> updateWeek(
       @RequestBody Week week, @RequestHeader("token") String token) {
     if (!verifierRequest.isAdmin(token)) {
@@ -67,6 +71,7 @@ public class WeekController {
     return ResponseEntity.ok(optionalWeek.get());
   }
 
+  @CrossOrigin
   @DeleteMapping
   public ResponseEntity<DeleteResult> deleteWeek(
       @RequestParam String id, @RequestHeader("token") String token) {

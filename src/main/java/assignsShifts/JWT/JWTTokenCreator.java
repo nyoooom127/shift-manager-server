@@ -24,7 +24,7 @@ public class JWTTokenCreator {
     return JWT.create()
         .withIssuer(JWTToken)
         .withSubject(JWTToken + " Details")
-        .withClaim("userId", gson.toJson(user))
+        .withClaim("user", gson.toJson(user))
         .withIssuedAt(new Date(System.currentTimeMillis()))
         .withExpiresAt(new Date(System.currentTimeMillis() + (86400L * 1000L)))
         .withJWTId(UUID.randomUUID().toString())

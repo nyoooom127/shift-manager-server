@@ -15,7 +15,7 @@ public class ConstraintService extends AbstractService<Constraint> {
   @Override
   public Optional<Constraint> create(Constraint entity) {
     Optional<Constraint> constraint = super.create(entity);
-    constraint.ifPresent(value -> userService.addConstraint(entity.getUser().getId(), value));
+    constraint.ifPresent(value -> userService.addConstraint(entity.getUser(), value));
 
     return constraint;
   }
@@ -24,7 +24,7 @@ public class ConstraintService extends AbstractService<Constraint> {
   public Optional<DeleteResult> delete(String id) {
     Optional<Constraint> constraint = this.repository.findById(id);
 
-    constraint.ifPresent(value -> userService.removeConstraint(value.getUser().getId(), id));
+    constraint.ifPresent(value -> userService.removeConstraint(value.getUser(), id));
     return super.delete(id);
   }
 }

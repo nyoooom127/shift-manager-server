@@ -78,7 +78,7 @@ public class UserRepository extends AbstractRepository<User> {
     User user = optionalUser.get();
     user.getShifts().add(shift);
     user.getNumShifts()
-        .put(shift.getType(), user.getNumShifts().getOrDefault(shift.getType(), 0) + 1);
+        .put(shift.getType().getId(), user.getNumShifts().getOrDefault(shift.getType().getId(), 0) + 1);
 
     return this.save(user);
   }
@@ -98,8 +98,8 @@ public class UserRepository extends AbstractRepository<User> {
       user.getShifts().removeIf(shift -> shift.getId().equals(shiftId));
       user.getNumShifts()
           .put(
-              optionalShift.get().getType(),
-              user.getNumShifts().getOrDefault(optionalShift.get().getType(), 1) - 1);
+              optionalShift.get().getType().getId(),
+              user.getNumShifts().getOrDefault(optionalShift.get().getType().getId(), 1) - 1);
     }
 
     return this.save(user);

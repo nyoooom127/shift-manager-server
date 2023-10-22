@@ -5,6 +5,7 @@ import com.mongodb.client.result.DeleteResult;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -16,7 +17,9 @@ public abstract class AbstractService<T extends Model> {
   }
 
   public Optional<T> create(T entity) {
-    entity.setId(UUID.randomUUID().toString());
+    if (Objects.isNull(entity.getId())) {
+      entity.setId(UUID.randomUUID().toString());
+    }
 
     return this.repository.save(entity);
   }

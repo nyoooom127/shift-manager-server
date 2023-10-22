@@ -15,6 +15,7 @@ public class ConstraintTypeController {
   @Autowired private ConstraintTypeService constraintTypeService;
   @Autowired private VerifierRequest verifierRequest;
 
+  @CrossOrigin
   @GetMapping
   public ResponseEntity<List<ConstraintType>> findAll(@RequestHeader("token") String token) {
     if (!verifierRequest.isVerify(token)) {
@@ -24,7 +25,8 @@ public class ConstraintTypeController {
     return ResponseEntity.ok(this.constraintTypeService.findAll());
   }
 
-  @PostMapping(value = "/create")
+  @CrossOrigin
+  @PostMapping(value = "/create")//, consumes = {"application/json;charset=UTF-8"})
   public ResponseEntity<ConstraintType> createConstraintType(
       @RequestBody ConstraintType constraintType, @RequestHeader("token") String token) {
     if (!verifierRequest.isAdmin(token)) {
@@ -41,7 +43,8 @@ public class ConstraintTypeController {
     return ResponseEntity.ok(optionalConstraintType.get());
   }
 
-  @PostMapping(value = "/update")
+  @CrossOrigin
+  @PostMapping(value = "/update")//, consumes = {"application/json;charset=UTF-8"})
   public ResponseEntity<ConstraintType> updateConstraintType(
       @RequestBody ConstraintType constraintType, @RequestHeader("token") String token) {
     if (!verifierRequest.isAdmin(token)) {
@@ -58,6 +61,7 @@ public class ConstraintTypeController {
     return ResponseEntity.ok(optionalConstraintType.get());
   }
 
+  @CrossOrigin
   @DeleteMapping
   public ResponseEntity<DeleteResult> deleteConstraintType(
       @RequestParam String id, @RequestHeader("token") String token) {

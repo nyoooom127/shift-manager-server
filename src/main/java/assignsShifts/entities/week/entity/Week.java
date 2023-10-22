@@ -8,6 +8,7 @@ import com.mongodb.lang.NonNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -19,7 +20,8 @@ import java.util.Optional;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @AllArgsConstructor
-@Document("week")
+@NoArgsConstructor
+@Document("weeks")
 public class Week extends Model {
   @DBRef @NonNull private List<Shift> shifts;
   @DBRef @NonNull private WeekType type;
@@ -40,7 +42,8 @@ public class Week extends Model {
               Calendar shiftStartCalendar = Calendar.getInstance();
               shiftStartCalendar.setTime(shift.getStartDate());
 
-              return shiftType.equals(shift.getType()) && shiftStartDate.equals(shiftStartCalendar);
+              return shiftType.equals(shift.getType()) && shiftStartDate.get(Calendar.YEAR) == shiftStartCalendar.get(Calendar.YEAR) &&
+                      shiftStartDate.get(Calendar.DAY_OF_YEAR) == shiftStartCalendar.get(Calendar.DAY_OF_YEAR);
             })
         .findFirst();
   }

@@ -15,6 +15,7 @@ public class ShiftTypeController {
   @Autowired private ShiftTypeService shiftTypeService;
   @Autowired private VerifierRequest verifierRequest;
 
+  @CrossOrigin
   @GetMapping
   public ResponseEntity<List<ShiftType>> findAll(@RequestHeader("token") String token) {
     if (!verifierRequest.isVerify(token)) {
@@ -24,7 +25,8 @@ public class ShiftTypeController {
     return ResponseEntity.ok(this.shiftTypeService.findAll());
   }
 
-  @PostMapping(value = "/create")
+  @CrossOrigin
+  @PostMapping(value = "/create")//, consumes = {"application/json;charset=UTF-8"})
   public ResponseEntity<ShiftType> createShiftType(
       @RequestBody ShiftType shiftType, @RequestHeader("token") String token) {
     if (!verifierRequest.isAdmin(token)) {
@@ -40,7 +42,8 @@ public class ShiftTypeController {
     return ResponseEntity.ok(optionalShiftType.get());
   }
 
-  @PostMapping(value = "/update")
+  @CrossOrigin
+  @PostMapping(value = "/update")//, consumes = {"application/json;charset=UTF-8"})
   public ResponseEntity<ShiftType> updateShiftType(
       @RequestBody ShiftType shiftType, @RequestHeader("token") String token) {
     if (!verifierRequest.isAdmin(token)) {
@@ -56,6 +59,7 @@ public class ShiftTypeController {
     return ResponseEntity.ok(optionalShiftType.get());
   }
 
+  @CrossOrigin
   @DeleteMapping
   public ResponseEntity<DeleteResult> deleteShiftType(
       @RequestParam String id, @RequestHeader("token") String token) {

@@ -6,6 +6,8 @@ import com.mongodb.lang.NonNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
@@ -13,10 +15,13 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 @Document("userTypes")
 public class UserType extends Model {
   private String name;
-  @NonNull private List<ShiftType> allowedShiftTypes;
+  @NonNull
+  @DBRef
+  private List<ShiftType> allowedShiftTypes;
   private boolean autoScheduled;
   private boolean needsSupervision;
   private boolean canSupervise;

@@ -3,11 +3,9 @@ package assignsShifts.entities.constraint.entity;
 import assignsShifts.entities.constraint.type.ConstraintType;
 import assignsShifts.entities.user.entity.User;
 import assignsShifts.models.Model;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.mongodb.lang.NonNull;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.*;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -17,13 +15,14 @@ import java.util.Date;
 @Data
 @Document("constraints")
 @AllArgsConstructor
+@NoArgsConstructor
 @Builder
 public class Constraint extends Model {
   @DBRef private ConstraintType type;
   @NonNull private Date startDate;
   @NonNull private Date endDate;
   private String comment;
-  @DBRef @NonNull private User user;
+  @NonNull private String user;
 
   public Constraint(
       String id,
@@ -31,7 +30,7 @@ public class Constraint extends Model {
       @NonNull Date startDate,
       @NonNull Date endDate,
       String comment,
-      @NonNull User user) {
+      @NonNull String user) {
     super(id);
     this.type = type;
     this.startDate = startDate;

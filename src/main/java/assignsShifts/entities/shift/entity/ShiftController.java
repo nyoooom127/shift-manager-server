@@ -15,6 +15,7 @@ public class ShiftController {
   @Autowired private ShiftService shiftService;
   @Autowired private VerifierRequest verifierRequest;
 
+  @CrossOrigin
   @GetMapping
   public ResponseEntity<List<Shift>> findAll(@RequestHeader("token") String token) {
     if (!verifierRequest.isVerify(token)) {
@@ -24,7 +25,8 @@ public class ShiftController {
     return ResponseEntity.ok(this.shiftService.findAll());
   }
 
-  @PostMapping(value = "/create")
+  @CrossOrigin
+  @PostMapping(value = "/create")//, consumes = {"application/json;charset=UTF-8"})
   public ResponseEntity<Shift> createShift(
       @RequestBody Shift shift, @RequestHeader("token") String token) {
     if (!verifierRequest.isAdmin(token)) {
@@ -40,7 +42,8 @@ public class ShiftController {
     return ResponseEntity.ok(optionalShift.get());
   }
 
-  @PostMapping(value = "/update")
+  @CrossOrigin
+  @PostMapping(value = "/update")//, consumes = {"application/json;charset=UTF-8"})
   public ResponseEntity<Shift> updateShift(
       @RequestBody Shift shift, @RequestHeader("token") String token) {
     if (!verifierRequest.isAdmin(token)) {
@@ -56,6 +59,7 @@ public class ShiftController {
     return ResponseEntity.ok(optionalShift.get());
   }
 
+  @CrossOrigin
   @DeleteMapping
   public ResponseEntity<DeleteResult> deleteShift(
       @RequestParam String id, @RequestHeader("token") String token) {

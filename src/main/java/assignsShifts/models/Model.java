@@ -9,7 +9,7 @@ import java.util.UUID;
 
 @Data
 @AllArgsConstructor
-@Builder
+//@Builder
 public abstract class Model {
   @Id protected String id;
 

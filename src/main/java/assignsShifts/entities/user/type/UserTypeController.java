@@ -15,6 +15,7 @@ public class UserTypeController {
   @Autowired private UserTypeService userTypeService;
   @Autowired private VerifierRequest verifierRequest;
 
+  @CrossOrigin
   @GetMapping
   public ResponseEntity<List<UserType>> findAll(@RequestHeader("token") String token) {
     if (!verifierRequest.isVerify(token)) {
@@ -24,7 +25,8 @@ public class UserTypeController {
     return ResponseEntity.ok(this.userTypeService.findAll());
   }
 
-  @PostMapping(value = "/create")
+  @CrossOrigin
+  @PostMapping(value = "/create")//, consumes = {"application/json;charset=UTF-8"})
   public ResponseEntity<UserType> createUserType(
       @RequestBody UserType userType, @RequestHeader("token") String token) {
     if (!verifierRequest.isAdmin(token)) {
@@ -40,7 +42,8 @@ public class UserTypeController {
     return ResponseEntity.ok(optionalUserType.get());
   }
 
-  @PostMapping(value = "/update")
+  @CrossOrigin
+  @PostMapping(value = "/update")//, consumes = {"application/json;charset=UTF-8"})
   public ResponseEntity<UserType> updateUserType(
       @RequestBody UserType userType, @RequestHeader("token") String token) {
     if (!verifierRequest.isAdmin(token)) {
@@ -56,6 +59,7 @@ public class UserTypeController {
     return ResponseEntity.ok(optionalUserType.get());
   }
 
+  @CrossOrigin
   @DeleteMapping
   public ResponseEntity<DeleteResult> deleteUserType(
       @RequestParam String id, @RequestHeader("token") String token) {

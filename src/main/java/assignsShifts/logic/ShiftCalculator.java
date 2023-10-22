@@ -6,7 +6,8 @@ import assignsShifts.entities.user.entity.User;
 import assignsShifts.entities.user.type.UserType;
 import assignsShifts.entities.week.entity.Week;
 import assignsShifts.models.enums.ShiftSchedulingLogicEnum;
-import assignsShifts.utils.DateUtil;
+import com.google.gson.Gson;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -14,67 +15,101 @@ import java.util.stream.Collectors;
 
 @Component
 public class ShiftCalculator {
+
+  @Autowired private Gson gson;
+
   private List<User> allUsers;
   private List<User> potentialUsers;
+  private int shiftsGenerated;
+  private List<ShiftType> shiftTypes;
 
-  private void init(List<User> userList) {
+  private void init(List<User> userList, Set<ShiftType> shiftTypes) {
     this.allUsers = new ArrayList<>(userList);
     this.potentialUsers = new ArrayList<>(userList);
+    this.shiftTypes = new ArrayList<>(shiftTypes);
+    this.shiftsGenerated = 0;
   }
 
   public Week calculateWeek(Week week, List<User> users) {
-    init(users);
+    init(users, week.getType().getRequiredShifts());
 
-    for (ShiftType shiftType : week.getType().getRequiredShifts()) {
-      List<User> usersForShiftType = filterUsersByShiftType(shiftType, potentialUsers);
-      Map<Boolean, List<User>> splitUsersBySupervision =
-          splitUsersBySupervision(shiftType, usersForShiftType);
-      Calendar day = Calendar.getInstance();
-      day.setTime(week.getStartDate());
+    System.out.printf("Received week with %d shifts%n", week.getShifts().size());
 
-      List<Shift> shifts;
+    Calendar day = Calendar.getInstance();
+    day.setTime(week.getStartDate());
 
-      if (ShiftSchedulingLogicEnum.ROTATION.equals(shiftType.getSchedulingLogic())) {
-        shifts = getShiftsByRotation(week, shiftType);
-      } else {
-        shifts = getShiftsByScore(week, shiftType, splitUsersBySupervision);
-      }
+    processExistingShifts(week.getShifts());
 
-      shifts.forEach(
-          shift -> {
-            potentialUsers.remove(shift.getUser());
-            potentialUsers.add(shift.getUser());
-          });
-
+    for (int numDay = 0; numDay < 7; numDay++) {
+      List<Shift> shifts = getShiftsForDay(day, week);
       week.getShifts().addAll(shifts);
+      day.add(Calendar.DATE, 1);
     }
+
+    System.out.println("Finished generating week for date: " + week.getStartDate().toString());
+    System.out.printf("Generated %d shifts%n", shiftsGenerated);
 
     return week;
   }
 
-  private List<Shift> getShiftsByRotation(Week week, ShiftType shiftType) {
-    int numShiftsPerWeek = shiftType.isHasWeekends() ? 7 : 5;
+  private List<Shift> getShiftsForDay(Calendar day, Week week) {
     List<Shift> shifts = new ArrayList<>();
-    User leastRecentUser = sortUsersByLeastRecent(shiftType, shiftType.getRotationUsers()).get(0);
-    Calendar day = Calendar.getInstance();
-    day.setTime(week.getStartDate());
 
-    for (int numDay = 0; numDay < numShiftsPerWeek; numDay++) {
+    for (ShiftType shiftType : shiftTypes) {
+
       Optional<Shift> existingShift = week.getShift(shiftType, day);
 
       if (existingShift.isPresent()) {
-        processShift(existingShift.get());
-      } else {
-        Shift shift = new Shift(day.getTime(), shiftType, leastRecentUser);
-        shifts.add(shift);
-        leastRecentUser.addShift(shift);
+        //        processShift(existingShift.get());
+        System.out.println("Found existing shift: \n" + gson.toJson(existingShift.get()));
+        continue;
       }
 
-      day.add(Calendar.DATE, 1);
+      System.out.println("No existing shift found, generating shift.");
+
+      List<User> usersForShiftType = filterUsersByShiftType(shiftType, potentialUsers);
+      Map<Boolean, List<User>> splitUsersBySupervision =
+          splitUsersBySupervision(shiftType, usersForShiftType);
+      Shift shift;
+
+      if (ShiftSchedulingLogicEnum.ROTATION.equals(shiftType.getSchedulingLogic())) {
+        //        shifts = getShiftsByRotation(week, shiftType);
+        shift = new Shift();
+      } else {
+        shift = getShiftByScore(shiftType, day, splitUsersBySupervision);
+      }
+      shifts.add(shift);
+      shiftsGenerated++;
+      //        shift.getUser().addShift(shift);
     }
 
     return shifts;
   }
+
+  //  private List<Shift> getShiftsByRotation(Week week, ShiftType shiftType) {
+  //    int numShiftsPerWeek = shiftType.isHasWeekends() ? 7 : 5;
+  //    List<Shift> shifts = new ArrayList<>();
+  //    User leastRecentUser = sortUsersByLeastRecent(shiftType,
+  // shiftType.getRotationUsers()).get(0);
+  //    Calendar day = Calendar.getInstance();
+  //    day.setTime(week.getStartDate());
+  //
+  //    for (int numDay = 0; numDay < numShiftsPerWeek; numDay++) {
+  //      Optional<Shift> existingShift = week.getShift(shiftType, day);
+  //
+  //      if (existingShift.isPresent()) {
+  //        processShift(existingShift.get());
+  //      } else {
+  //        Shift shift = new Shift(day.getTime(), shiftType, leastRecentUser.getId());
+  //        shifts.add(shift);
+  //        leastRecentUser.addShift(shift);
+  //      }
+  //
+  //      day.add(Calendar.DATE, 1);
+  //    }
+  //
+  //    return shifts;
+  //  }
 
   private List<Shift> getShiftsByScore(
       Week week, ShiftType shiftType, Map<Boolean, List<User>> splitUsersBySupervision) {
@@ -82,64 +117,48 @@ public class ShiftCalculator {
     Calendar day = Calendar.getInstance();
     day.setTime(week.getStartDate());
 
-    for (int numDay = 0; numDay < 5; numDay++) {
+    for (int numDay = 0; numDay < 7; numDay++) {
       Optional<Shift> existingShift = week.getShift(shiftType, day);
 
       if (existingShift.isPresent()) {
         processShift(existingShift.get());
+        System.out.println("Found existing shift: \n" + gson.toJson(existingShift.get()));
       } else {
-        Shift shift =
-            getShiftByScore(shiftType, Collections.singletonList(day), splitUsersBySupervision)
-                .get(0);
+        System.out.println("No existing shift found, generating shift.");
+        Shift shift = getShiftByScore(shiftType, day, splitUsersBySupervision);
         shifts.add(shift);
-        shift.getUser().addShift(shift);
+        shiftsGenerated++;
+        //        shift.getUser().addShift(shift);
       }
 
       day.add(Calendar.DATE, 1);
     }
 
-    if (shiftType.isHasWeekends()) {
-      Calendar friday = (Calendar) day.clone();
-      friday.set(Calendar.DAY_OF_WEEK, Calendar.FRIDAY);
-      Calendar saturday = (Calendar) day.clone();
-      saturday.set(Calendar.DAY_OF_WEEK, Calendar.SATURDAY);
-
-      List<Shift> weekendShifts =
-          getShiftByScore(shiftType, List.of(friday, saturday), splitUsersBySupervision);
-      shifts.addAll(weekendShifts);
-      weekendShifts.forEach(shift -> shift.getUser().addShift(shift));
-    }
-
     return shifts;
   }
 
-  private List<Shift> getShiftByScore(
-      ShiftType shiftType, List<Calendar> days, Map<Boolean, List<User>> splitUsersBySupervision) {
+  private Shift getShiftByScore(
+      ShiftType shiftType, Calendar day, Map<Boolean, List<User>> splitUsersBySupervision) {
     User user;
     List<User> qualifiedUsersForShiftDate =
-        filterUsersByShiftDates(shiftType, days, splitUsersBySupervision.get(true));
+        filterUsersByShiftDates(shiftType, day, splitUsersBySupervision.get(true));
     List<User> unQualifiedUsersForShiftDate =
-        filterUsersByShiftDates(shiftType, days, splitUsersBySupervision.get(false));
+        filterUsersByShiftDates(shiftType, day, splitUsersBySupervision.get(false));
 
-    if (days.stream().anyMatch(DateUtil::isWeekend) || unQualifiedUsersForShiftDate.isEmpty()) {
+    if (unQualifiedUsersForShiftDate.isEmpty()) {
       user =
           getUserForShift(
-              shiftType,
-              days.get(0),
-              qualifiedUsersForShiftDate,
-              splitUsersBySupervision.get(true));
+              shiftType, day, qualifiedUsersForShiftDate, splitUsersBySupervision.get(true));
     } else {
       user =
           getUserForShift(
-              shiftType,
-              days.get(0),
-              unQualifiedUsersForShiftDate,
-              splitUsersBySupervision.get(false));
+              shiftType, day, unQualifiedUsersForShiftDate, splitUsersBySupervision.get(false));
     }
 
-    return days.stream()
-        .map(day -> new Shift(day.getTime(), shiftType, user))
-        .collect(Collectors.toList());
+    Shift shift = new Shift(day.getTime(), shiftType, user.getId());
+    user.addShift(shift);
+
+    return shift;
   }
 
   private User getUserForShift(
@@ -165,22 +184,19 @@ public class ShiftCalculator {
   private boolean filterUserByShiftType(ShiftType shiftType, User user) {
     List<UserType> overlappingUserTypes = user.getOverlappingTypes(shiftType);
 
-    return !overlappingUserTypes.isEmpty() && isAutoScheduling(overlappingUserTypes);
+    return !overlappingUserTypes.isEmpty() && isAutoScheduling(overlappingUserTypes) && user.isActive();
   }
 
   private List<User> filterUsersByShiftDates(
-      ShiftType shiftType, List<Calendar> shiftDates, List<User> users) {
+      ShiftType shiftType, Calendar shiftDate, List<User> users) {
     return users.stream()
-        .filter(
-            user ->
-                shiftDates.stream()
-                    .allMatch(shiftDate -> filterUserByShiftDate(shiftType, shiftDate, user)))
+        .filter(user -> filterUserByShiftDate(shiftType, shiftDate, user))
         .collect(Collectors.toList());
   }
 
   private boolean filterUserByShiftDate(ShiftType shiftType, Calendar shiftDate, User user) {
     return user.isEnoughDaysSinceLastShift(shiftType, shiftDate)
-        && user.isHaveConstraint(shiftDate, shiftType.getMinBreak());
+        && !user.isHaveConstraint(shiftDate, shiftType.getStartHour(), shiftType.getDuration());
   }
 
   private Map<Boolean, List<User>> splitUsersBySupervision(ShiftType shiftType, List<User> users) {
@@ -234,11 +250,21 @@ public class ShiftCalculator {
         .collect(Collectors.toList());
   }
 
+  private void processExistingShifts(List<Shift> existingShifts) {
+    existingShifts.forEach(this::processShift);
+  }
+
   private void processShift(Shift shift) {
-    User shiftUser = shift.getUser();
-    shiftUser.addShift(shift);
-    potentialUsers.remove(shiftUser);
-    allUsers.set(allUsers.indexOf(shiftUser), shiftUser);
+    Optional<User> shiftUser =
+        allUsers.stream().filter(user -> user.getId().equals(shift.getUser())).findFirst();
+
+    if (shiftUser.isEmpty()) {
+      return;
+    }
+
+    shiftUser.get().addShift(shift);
+//    potentialUsers.remove(shiftUser.get());
+//    allUsers.set(allUsers.indexOf(shiftUser.get()), shiftUser.get());
   }
 
   private boolean isAutoScheduling(List<UserType> userTypes) {
