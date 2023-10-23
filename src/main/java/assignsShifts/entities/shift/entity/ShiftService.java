@@ -21,6 +21,22 @@ public class ShiftService extends AbstractService<Shift> {
   }
 
   @Override
+  public Optional<Shift> update(Shift entity) {
+    Optional<Shift> existingShift = findById(entity.getId());
+
+    if(existingShift.isEmpty()){
+      return Optional.empty();
+    }
+
+    if(!existingShift.get().getUser().equals(entity.getUser())){
+      userService.removeShift(existingShift.get().getUser(), existingShift.get().getId());
+      userService.addShift(entity.getUser(), entity);
+    }
+
+    return super.update(entity);
+  }
+
+  @Override
   public Optional<DeleteResult> delete(String id) {
     Optional<Shift> shift = this.repository.findById(id);
 

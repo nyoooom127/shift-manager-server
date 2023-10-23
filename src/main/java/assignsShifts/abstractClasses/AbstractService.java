@@ -16,6 +16,10 @@ public abstract class AbstractService<T extends Model> {
     return this.repository.findAll();
   }
 
+  public Optional<T> findById(String id) {
+    return this.repository.findById(id);
+  }
+
   public Optional<T> create(T entity) {
     if (Objects.isNull(entity.getId())) {
       entity.setId(UUID.randomUUID().toString());
@@ -30,6 +34,14 @@ public abstract class AbstractService<T extends Model> {
     }
 
     return this.repository.save(entity);
+  }
+
+  public Optional<T> upsert(T entity) {
+    if (this.repository.findById(entity.getId()).isEmpty()) {
+      return create(entity);
+    }
+
+    return update(entity);
   }
 
   public Optional<DeleteResult> delete(String id) {
