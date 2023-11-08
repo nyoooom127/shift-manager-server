@@ -24,11 +24,11 @@ public class ShiftService extends AbstractService<Shift> {
   public Optional<Shift> update(Shift entity) {
     Optional<Shift> existingShift = findById(entity.getId());
 
-    if(existingShift.isEmpty()){
+    if (existingShift.isEmpty()) {
       return Optional.empty();
     }
 
-    if(!existingShift.get().getUser().equals(entity.getUser())){
+    if (!existingShift.get().getUser().equals(entity.getUser())) {
       userService.removeShift(existingShift.get().getUser(), existingShift.get().getId());
       userService.addShift(entity.getUser(), entity);
     }

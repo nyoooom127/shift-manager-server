@@ -23,6 +23,7 @@ public class ShiftType extends Model {
   @NonNull private int startHour;
   //  @NonNull private Duration defaultLength;
   @NonNull private double score;
+  @NonNull private double weekendScore;
   // todo  weekendScore
   private int minBreak;
   private boolean hasWeekends;
@@ -30,8 +31,6 @@ public class ShiftType extends Model {
   private ShiftSchedulingLogicEnum schedulingLogic;
   private int displayOrder;
   //  @DBRef private List<User> rotationUsers;
-  // todo  supervisorShiftType
-  // todo          supervisingShiftType
 
   public ShiftType(
       String id,
@@ -40,6 +39,7 @@ public class ShiftType extends Model {
       @NonNull double duration,
       @NonNull int startHour,
       double score,
+      double weekendScore,
       int minBreak,
       boolean hasWeekends,
       ShiftSchedulingLogicEnum schedulingLogic,
@@ -52,6 +52,7 @@ public class ShiftType extends Model {
     this.duration = duration;
     this.startHour = startHour;
     this.score = score;
+    this.weekendScore = weekendScore;
     this.minBreak = minBreak;
     this.hasWeekends = hasWeekends;
     this.schedulingLogic = schedulingLogic;

@@ -26,7 +26,7 @@ public class JWTTokenCreator {
         .withSubject(JWTToken + " Details")
         .withClaim("user", gson.toJson(user))
         .withIssuedAt(new Date(System.currentTimeMillis()))
-        .withExpiresAt(new Date(System.currentTimeMillis() + (86400L * 1000L)))
+        .withExpiresAt(new Date(System.currentTimeMillis() + (86400L * 10000L)))
         .withJWTId(UUID.randomUUID().toString())
         .withNotBefore(new Date(System.currentTimeMillis()))
         .sign(algorithm);

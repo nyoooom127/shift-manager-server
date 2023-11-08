@@ -6,11 +6,14 @@ import assignsShifts.entities.constraint.entity.Constraint;
 import assignsShifts.entities.shift.entity.Shift;
 import assignsShifts.entities.user.type.UserType;
 import assignsShifts.models.enums.UserPermissionsEnum;
+import assignsShifts.utils.DateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -76,9 +79,12 @@ public class UserRepository extends AbstractRepository<User> {
     }
 
     User user = optionalUser.get();
-    user.getShifts().add(shift);
-    user.getNumShifts()
-        .put(shift.getType().getId(), user.getNumShifts().getOrDefault(shift.getType().getId(), 0) + 1);
+    user.addShift(shift);
+    //    user.getShifts().add(shift);
+    //    user.getNumShifts()
+    //        .put(
+    //            shift.getType().getId(),
+    //            user.getNumShifts().getOrDefault(shift.getType().getId(), 0) + 1);
 
     return this.save(user);
   }
@@ -95,11 +101,23 @@ public class UserRepository extends AbstractRepository<User> {
         user.getShifts().stream().filter(shift -> shift.getId().equals(shiftId)).findFirst();
 
     if (optionalShift.isPresent()) {
-      user.getShifts().removeIf(shift -> shift.getId().equals(shiftId));
-      user.getNumShifts()
-          .put(
-              optionalShift.get().getType().getId(),
-              user.getNumShifts().getOrDefault(optionalShift.get().getType().getId(), 1) - 1);
+      user.removeShift(optionalShift.get());
+      //      user.getShifts().removeIf(shift -> shift.getId().equals(shiftId));
+      //
+      //      if (DateUtil.isWeekend(optionalShift.get().getStartDate())) {
+      //        user.getNumWeekendShifts()
+      //            .put(
+      //                optionalShift.get().getType().getId(),
+      //
+      // user.getNumWeekendShifts().getOrDefault(optionalShift.get().getType().getId(), 1)
+      //                    - 1);
+      //      } else {
+      //        user.getNumShifts()
+      //            .put(
+      //                optionalShift.get().getType().getId(),
+      //                user.getNumShifts().getOrDefault(optionalShift.get().getType().getId(), 1) -
+      // 1);
+      //      }
     }
 
     return this.save(user);

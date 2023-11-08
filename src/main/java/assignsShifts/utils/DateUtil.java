@@ -2,6 +2,7 @@ package assignsShifts.utils;
 
 import java.time.Duration;
 import java.util.Calendar;
+import java.util.Date;
 
 public class DateUtil {
 
@@ -33,6 +34,13 @@ public class DateUtil {
   public static boolean isDateInRange(
       Calendar start, Calendar end, Calendar startDateToCheck, Calendar endDateToCheck) {
     return !(start.after(endDateToCheck) || end.before(startDateToCheck));
+  }
+
+  public static boolean isWeekend(Date date) {
+    Calendar calendar = Calendar.getInstance();
+    calendar.setTime(date);
+
+    return isWeekend(calendar);
   }
 
   public static boolean isWeekend(Calendar date) {

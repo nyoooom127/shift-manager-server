@@ -6,8 +6,7 @@ import assignsShifts.entities.shift.type.ShiftType;
 import assignsShifts.entities.user.type.UserType;
 import assignsShifts.models.Model;
 import assignsShifts.models.enums.UserPermissionsEnum;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import assignsShifts.utils.DateUtil;
 import com.mongodb.lang.NonNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,25 +27,21 @@ import static assignsShifts.utils.DateUtil.isDateInRange;
 @NoArgsConstructor
 @Builder(toBuilder = true)
 public class User extends Model {
-//  @NonNull
   private String fullName;
   @DBRef private List<UserType> types;
   private Map<String, Integer> numShifts;
+  private Map<String, Integer> numWeekendShifts;
   private AuthorizationData authorizationData;
-  @DBRef
-//  @NonNull
-  private List<Constraint> constraints;
-  @DBRef
-//  @NonNull
-  private List<Shift> shifts;
+  @DBRef private List<Constraint> constraints;
+  @DBRef private List<Shift> shifts;
   private boolean active;
-  //  @DBRef private Shift mostRecentShift;
 
   public User(
       String id,
       @NonNull String fullName,
       List<UserType> types,
       Map<String, Integer> numShifts,
+      Map<String, Integer> numWeekendShifts,
       AuthorizationData authorizationData,
       @NonNull List<Constraint> constraints,
       @NonNull List<Shift> shifts,
@@ -55,6 +50,7 @@ public class User extends Model {
     this.fullName = fullName;
     this.types = types;
     this.numShifts = numShifts;
+    this.numWeekendShifts = numWeekendShifts;
     this.authorizationData = authorizationData;
     this.constraints = constraints;
     this.shifts = shifts;
@@ -62,17 +58,36 @@ public class User extends Model {
   }
 
   public User hideAuthData() {
-    return this;//.toBuilder().authorizationData(null).build();
+    return this; // .toBuilder().authorizationData(null).build();
   }
 
   public void addShift(Shift shiftToAdd) {
     this.shifts.add(shiftToAdd);
-    Integer currentNum = this.numShifts.getOrDefault(shiftToAdd.getType().getId(), 0);
-    this.numShifts.put(shiftToAdd.getType().getId(), currentNum + 1);
 
-    //    if (this.mostRecentShift == null || ) {
-    //      this.mostRecentShift = shiftToAdd;
-    //    }
+    if (DateUtil.isWeekend(shiftToAdd.getStartDate())) {
+      Integer currentNum = this.numWeekendShifts.getOrDefault(shiftToAdd.getType().getId(), 0);
+      this.numWeekendShifts.put(shiftToAdd.getType().getId(), currentNum + 1);
+    } else {
+      Integer currentNum = this.numShifts.getOrDefault(shiftToAdd.getType().getId(), 0);
+      this.numShifts.put(shiftToAdd.getType().getId(), currentNum + 1);
+    }
+  }
+
+  public void removeShift(Shift shiftToRemove) {
+    boolean removed =
+        this.getShifts().removeIf(shift -> shift.getId().equals(shiftToRemove.getId()));
+
+    if (!removed) {
+      return;
+    }
+
+    if (DateUtil.isWeekend(shiftToRemove.getStartDate())) {
+      Integer currentNum = this.numWeekendShifts.getOrDefault(shiftToRemove.getType().getId(), 1);
+      this.numWeekendShifts.put(shiftToRemove.getType().getId(), currentNum - 1);
+    } else {
+      Integer currentNum = this.numShifts.getOrDefault(shiftToRemove.getType().getId(), 1);
+      this.numShifts.put(shiftToRemove.getType().getId(), currentNum - 1);
+    }
   }
 
   public List<Constraint> getConstraints() {
@@ -83,29 +98,46 @@ public class User extends Model {
     return this.constraints;
   }
 
-//  public List<ShiftType> getShiftOptions() {
-//    return this.getTypes().stream()
-//        .flatMap(userType -> userType.getAllowedShiftTypes().stream())
-//        .distinct()
-//        .collect(Collectors.toList());
-//  }
-
   public boolean isEnoughDaysSinceLastShift(ShiftType shiftType, Calendar startDate) {
-    Optional<Shift> mostRecentShift = getMostRecentShift(shiftType);
+    Optional<Shift> mostRecentShift = getMostRecentShift(shiftType, startDate);
 
     if (mostRecentShift.isEmpty()) {
       return true;
     }
 
-    return Math.abs(Duration.between(mostRecentShift.get().getStartDate().toInstant(), startDate.toInstant())
-            .toDays())
+    return Math.abs(
+            Duration.between(
+                    mostRecentShift.get().getStartDate().toInstant(), startDate.toInstant())
+                .toDays())
         > shiftType.getMinBreak();
   }
 
-  public Optional<Shift> getMostRecentShift(ShiftType shiftType) {
+  public boolean isEnoughDaysUntilNextShift(ShiftType shiftType, Calendar startDate) {
+    Optional<Shift> nextUpcomingShift = getClosestUpcomingShift(shiftType, startDate);
+
+    if (nextUpcomingShift.isEmpty()) {
+      return true;
+    }
+
+    return Math.abs(
+            Duration.between(
+                    nextUpcomingShift.get().getStartDate().toInstant(), startDate.toInstant())
+                .toDays())
+        > shiftType.getMinBreak();
+  }
+
+  public Optional<Shift> getMostRecentShift(ShiftType shiftType, Calendar date) {
     return this.getShifts().stream()
-//        .filter(shift -> shiftType.equals(shift.getType()))
+        .filter(shift -> shift.getStartDate().compareTo(date.getTime()) <= 0)
+        //        .filter(shift -> shiftType.equals(shift.getType()))
         .max(Shift::compareByDate);
+  }
+
+  public Optional<Shift> getClosestUpcomingShift(ShiftType shiftType, Calendar date) {
+    return this.getShifts().stream()
+        .filter(shift -> shift.getStartDate().compareTo(date.getTime()) >= 0)
+        //        .filter(shift -> shiftType.equals(shift.getType()))
+        .min(Shift::compareByDate);
   }
 
   public List<UserType> getOverlappingTypes(ShiftType shiftType) {
@@ -114,9 +146,9 @@ public class User extends Model {
         .collect(Collectors.toList());
   }
 
-  public boolean isHaveConstraint(Calendar shiftStart, int shiftStartHour, double shiftDuration ) {
+  public boolean isHaveConstraint(Calendar shiftStart, int shiftStartHour, double shiftDuration) {
     Calendar shiftStartHourCal = ((Calendar) shiftStart.clone());
-            shiftStartHourCal.set(Calendar.HOUR_OF_DAY, shiftStartHour);
+    shiftStartHourCal.set(Calendar.HOUR_OF_DAY, shiftStartHour);
     Calendar shiftEnd = (Calendar) shiftStartHourCal.clone();
     shiftEnd.add(Calendar.HOUR_OF_DAY, (int) Math.round(shiftDuration));
 
@@ -160,7 +192,7 @@ public class User extends Model {
 
   public double getShiftScore(ShiftType shiftType, boolean strict) {
     if (strict) {
-      return getNumShifts().get(shiftType.getId()) * shiftType.getScore();
+      return getShiftTypeScore(shiftType);
     }
 
     List<UserType> userTypes = getOverlappingTypes(shiftType);
@@ -171,9 +203,12 @@ public class User extends Model {
             .distinct()
             .toList();
 
-    return shiftTypes.stream()
-        .mapToDouble(currShiftType -> getNumShifts().get(currShiftType.getId()) * currShiftType.getScore())
-        .sum();
+    return shiftTypes.stream().mapToDouble(this::getShiftTypeScore).sum();
+  }
+
+  private double getShiftTypeScore(ShiftType shiftType) {
+    return getNumShifts().getOrDefault(shiftType.getId(), 0) * shiftType.getScore()
+        + getNumWeekendShifts().getOrDefault(shiftType.getId(), 0) * shiftType.getWeekendScore();
   }
 
   @Override
@@ -193,20 +228,19 @@ public class User extends Model {
   @AllArgsConstructor
   public static class AuthorizationData {
     @NonNull private String username;
-//    @JsonIgnore
     private String password;
     @NonNull private String email;
     @NonNull private String phone;
     @NonNull private UserPermissionsEnum userPermissions;
 
-//    @JsonIgnore
-//    public String getPassword() {
-//      return password;
-//    }
-//
-//    @JsonProperty
-//    public void setPassword( String password) {
-//      this.password = password;
-//    }
+    //    @JsonIgnore
+    //    public String getPassword() {
+    //      return password;
+    //    }
+    //
+    //    @JsonProperty
+    //    public void setPassword( String password) {
+    //      this.password = password;
+    //    }
   }
 }
