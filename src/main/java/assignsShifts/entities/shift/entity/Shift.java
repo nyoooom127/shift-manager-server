@@ -19,12 +19,14 @@ public class Shift extends Model {
   private Date startDate;
   @DBRef private ShiftType type;
   private String user;
+  private String week;
 
-  public Shift(String id, Date startDate, ShiftType type, String user) {
+  public Shift(String id, Date startDate, ShiftType type, String user, String week) {
     super(id);
     this.startDate = startDate;
     this.type = type;
     this.user = user;
+    this.week = week;
   }
 
   public static int compareByDate(Shift a, Shift b) {

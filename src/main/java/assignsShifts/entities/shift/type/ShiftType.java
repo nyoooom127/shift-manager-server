@@ -2,6 +2,7 @@ package assignsShifts.entities.shift.type;
 
 import assignsShifts.models.Model;
 import assignsShifts.models.enums.ShiftSchedulingLogicEnum;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.mongodb.lang.NonNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -24,12 +25,18 @@ public class ShiftType extends Model {
   //  @NonNull private Duration defaultLength;
   @NonNull private double score;
   @NonNull private double weekendScore;
-  // todo  weekendScore
   private int minBreak;
+  private int maxShiftsPerWeek;
   private boolean hasWeekends;
   //  private int numShiftsPerWeek;
   private ShiftSchedulingLogicEnum schedulingLogic;
   private int displayOrder;
+
+  @JsonProperty("isNeedQualified")
+  private boolean isNeedQualified;
+
+  @JsonProperty("isNight")
+  private boolean isNight;
   //  @DBRef private List<User> rotationUsers;
 
   public ShiftType(
@@ -43,7 +50,9 @@ public class ShiftType extends Model {
       int minBreak,
       boolean hasWeekends,
       ShiftSchedulingLogicEnum schedulingLogic,
-      int displayOrder
+      int displayOrder,
+      boolean isNeedQualified,
+      boolean isNight
       //      List<User> rotationUsers
       ) {
     super(id);
@@ -57,6 +66,8 @@ public class ShiftType extends Model {
     this.hasWeekends = hasWeekends;
     this.schedulingLogic = schedulingLogic;
     this.displayOrder = displayOrder;
+    this.isNeedQualified = isNeedQualified;
+    this.isNight = isNight;
     //    this.rotationUsers = rotationUsers;
   }
 

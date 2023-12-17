@@ -2,6 +2,7 @@ package assignsShifts.entities.user.type;
 
 import assignsShifts.entities.shift.type.ShiftType;
 import assignsShifts.models.Model;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.mongodb.lang.NonNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,12 +20,12 @@ import java.util.List;
 @Document("userTypes")
 public class UserType extends Model {
   private String name;
-  @NonNull
-  @DBRef
-  private List<ShiftType> allowedShiftTypes;
+  @NonNull @DBRef private List<ShiftType> allowedShiftTypes;
   private boolean autoScheduled;
-  private boolean needsSupervision;
-  private boolean canSupervise;
+
+  @JsonProperty("isQualified")
+  private boolean isQualified;
+
   private String color;
 
   public UserType(
@@ -32,15 +33,13 @@ public class UserType extends Model {
       String name,
       @NonNull List<ShiftType> allowedShiftTypes,
       boolean autoScheduled,
-      boolean needsSupervision,
-      boolean canSupervise,
+      boolean isQualified,
       String color) {
     super(id);
     this.name = name;
     this.allowedShiftTypes = allowedShiftTypes;
     this.autoScheduled = autoScheduled;
-    this.needsSupervision = needsSupervision;
-    this.canSupervise = canSupervise;
+    this.isQualified = isQualified;
     this.color = color;
   }
 }

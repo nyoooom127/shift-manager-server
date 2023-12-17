@@ -7,6 +7,7 @@ import assignsShifts.entities.user.type.UserType;
 import assignsShifts.models.Model;
 import assignsShifts.models.enums.UserPermissionsEnum;
 import assignsShifts.utils.DateUtil;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.mongodb.lang.NonNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -26,15 +27,22 @@ import static assignsShifts.utils.DateUtil.isDateInRange;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder(toBuilder = true)
-public class User extends Model {
+public class User extends Model implements Cloneable {
   private String fullName;
   @DBRef private List<UserType> types;
   private Map<String, Integer> numShifts;
   private Map<String, Integer> numWeekendShifts;
+  Map<String, Double> initialScores;
   private AuthorizationData authorizationData;
   @DBRef private List<Constraint> constraints;
   @DBRef private List<Shift> shifts;
   private boolean active;
+
+  @JsonProperty("isQualified")
+  private boolean isQualified;
+
+  private boolean avoidNight;
+  private boolean avoidWeekend;
 
   public User(
       String id,
@@ -42,19 +50,27 @@ public class User extends Model {
       List<UserType> types,
       Map<String, Integer> numShifts,
       Map<String, Integer> numWeekendShifts,
+      Map<String, Double> initialScores,
       AuthorizationData authorizationData,
       @NonNull List<Constraint> constraints,
       @NonNull List<Shift> shifts,
-      boolean active) {
+      boolean active,
+      boolean isQualified,
+      boolean avoidNight,
+      boolean avoidWeekend) {
     super(id);
     this.fullName = fullName;
     this.types = types;
     this.numShifts = numShifts;
     this.numWeekendShifts = numWeekendShifts;
+    this.initialScores = initialScores;
     this.authorizationData = authorizationData;
     this.constraints = constraints;
     this.shifts = shifts;
     this.active = active;
+    this.isQualified = isQualified;
+    this.avoidNight = avoidNight;
+    this.avoidWeekend = avoidWeekend;
   }
 
   public User hideAuthData() {
@@ -207,8 +223,27 @@ public class User extends Model {
   }
 
   private double getShiftTypeScore(ShiftType shiftType) {
-    return getNumShifts().getOrDefault(shiftType.getId(), 0) * shiftType.getScore()
+    return Optional.ofNullable(getInitialScores())
+            .map(initScores -> initScores.getOrDefault(shiftType.getId(), 0.0))
+            .orElse(0.0)
+        + getNumShifts().getOrDefault(shiftType.getId(), 0) * shiftType.getScore()
         + getNumWeekendShifts().getOrDefault(shiftType.getId(), 0) * shiftType.getWeekendScore();
+  }
+
+  public User cloneWithoutLists() {
+    //    User t = (User) clone();
+    User clone =
+        User.builder()
+            .fullName(getFullName())
+            .authorizationData(getAuthorizationData())
+            .active(isActive())
+            .isQualified(isQualified())
+            .avoidNight(isAvoidNight())
+            .build();
+    // todo - find way to add to builder.
+    clone.setId(getId()); // Separate because it's a member of superclass Model
+
+    return clone;
   }
 
   @Override
@@ -222,6 +257,17 @@ public class User extends Model {
   @Override
   public int hashCode() {
     return Objects.hash(id);
+  }
+
+  @Override
+  public User clone() {
+    try {
+      User clone = (User) super.clone();
+      // TODO: copy mutable state here, so the clone can't change the internals of the original
+      return clone;
+    } catch (CloneNotSupportedException e) {
+      throw new AssertionError();
+    }
   }
 
   @Data

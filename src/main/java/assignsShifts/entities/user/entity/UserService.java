@@ -3,10 +3,12 @@ package assignsShifts.entities.user.entity;
 import assignsShifts.abstractClasses.AbstractService;
 import assignsShifts.entities.constraint.entity.Constraint;
 import assignsShifts.entities.shift.entity.Shift;
+import assignsShifts.entities.shift.type.ShiftType;
 import assignsShifts.entities.user.type.UserType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,6 +22,45 @@ public class UserService extends AbstractService<User> {
 
   public Optional<String> logIn(String userName, String password) {
     return this.userRepository.logIn(userName, password);
+  }
+
+  @Override
+  public Optional<User> create(User entity) {
+    List<User> allUsers = this.findByType(entity.getTypes());
+    entity.setInitialScores(new HashMap<>());
+    List<ShiftType> shiftTypes =
+        entity.getTypes().stream()
+            .flatMap(
+                userType -> userType.getAllowedShiftTypes().stream()
+                //                                         .map(Model::getId)
+                )
+            .distinct()
+            .toList();
+
+    shiftTypes.forEach(
+        shiftType -> {
+          List<Double> scores =
+              allUsers.stream()
+                  .filter(
+                      user ->
+                          user.getTypes().stream()
+                              .anyMatch(
+                                  userType -> userType.getAllowedShiftTypes().contains(shiftType)))
+                  .map(user -> user.getShiftScore(shiftType, true))
+                  .sorted()
+                  .toList();
+          double median;
+
+          if (scores.size() % 2 == 0) {
+            median = (scores.get(scores.size() / 2) + scores.get(scores.size() / 2 - 1)) / 2;
+          } else {
+            median = scores.get(scores.size() / 2);
+          }
+
+          entity.getInitialScores().put(shiftType.getId(), median);
+        });
+
+    return super.create(entity);
   }
 
   public Optional<User> addConstraint(String userId, Constraint constraint) {

@@ -48,4 +48,19 @@ public class DateUtil {
 
     return weekday == Calendar.FRIDAY || weekday == Calendar.SATURDAY;
   }
+
+  public static boolean isTomorrowWeekend(Date date) {
+    Calendar calendar = Calendar.getInstance();
+    calendar.setTime(date);
+
+    return isTomorrowWeekend(calendar);
+  }
+
+  public static boolean isTomorrowWeekend(Calendar date) {
+    Calendar tomorrow = Calendar.getInstance();
+    tomorrow.setTime(date.getTime());
+    tomorrow.add(Calendar.DATE, 1);
+
+    return isWeekend(tomorrow);
+  }
 }
