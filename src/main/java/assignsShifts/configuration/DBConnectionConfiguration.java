@@ -11,6 +11,12 @@ import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 
 @Configuration
 public class DBConnectionConfiguration {
+  @Value("${assigns.shifts.database.username:}")
+  private String databaseUsername;
+
+  @Value("${assigns.shifts.database.password:}")
+  private String databasePassword;
+
   @Value("${assigns.shifts.database.address:}")
   private String databaseAddress;
 
@@ -21,7 +27,15 @@ public class DBConnectionConfiguration {
   private String databaseDatabase;
 
   private void validateDataBaseParams() throws ValidationParamException {
-    if (Strings.isBlank(databaseAddress)) {
+    if (Strings.isBlank(databaseUsername)) {
+      throw new ValidationParamException("assigns.shifts.database.username");
+    }
+
+        if (Strings.isBlank(databasePassword)) {
+      throw new ValidationParamException("assigns.shifts.database.password");
+    }
+
+        if (Strings.isBlank(databaseAddress)) {
       throw new ValidationParamException("assigns.shifts.database.address");
     }
 
@@ -37,8 +51,10 @@ public class DBConnectionConfiguration {
   private String getConnectionString() throws ValidationParamException {
     this.validateDataBaseParams();
 
+//    "mongodb+srv://shiftManager:PwILYW3ryFgcIw6h@shiftmanager.dvvn49n.mongodb.net/shiftManager"
+
     return String.format(
-        "mongodb://%s:%s/%s", this.databaseAddress, this.databasePort, this.databaseDatabase);
+            "mongodb+srv://%s:%s@%s/%s",this.databaseUsername, this.databasePassword, this.databaseAddress, this.databaseDatabase);
   }
 
   @Bean
