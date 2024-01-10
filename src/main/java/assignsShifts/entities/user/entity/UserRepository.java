@@ -22,6 +22,13 @@ public class UserRepository extends AbstractRepository<User> {
 
   @Autowired private JWTTokenCreator jwtTokenCreator;
 
+  public List<User> findAllNoLists() {
+    Query query = new Query();
+    query.fields().exclude("constraints", "shifts");
+
+    return this.mongoTemplate.find(query, getType());
+  }
+
   public List<User> findByType(List<UserType> userTypes) {
     Query query = Query.query(Criteria.where("types").in(userTypes));
 

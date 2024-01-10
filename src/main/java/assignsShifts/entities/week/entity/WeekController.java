@@ -4,9 +4,11 @@ import assignsShifts.JWT.VerifierRequest;
 import assignsShifts.models.enums.UserPermissionsEnum;
 import com.mongodb.client.result.DeleteResult;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,7 +29,19 @@ public class WeekController {
   }
 
   @CrossOrigin
-  @PostMapping(value = "/calculate")//, consumes = {"application/json;charset=UTF-8"})
+  @GetMapping("/date")
+  public ResponseEntity<List<Week>> findAllByDate(
+      @RequestHeader("token") String token,
+      @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date date) {
+    if (!verifierRequest.isVerify(token)) {
+      return ResponseEntity.ok().build();
+    }
+
+    return ResponseEntity.ok(this.weekService.findAllByDate(date));
+  }
+
+  @CrossOrigin
+  @PostMapping(value = "/calculate") // , consumes = {"application/json;charset=UTF-8"})
   public ResponseEntity<Week> calculateWeek(
       @RequestBody Week week, @RequestHeader("token") String token) {
     if (!verifierRequest.isVerify(token, UserPermissionsEnum.ADMIN)) {
@@ -38,7 +52,7 @@ public class WeekController {
   }
 
   @CrossOrigin
-  @PostMapping(value = "/create")//, consumes = {"application/json;charset=UTF-8"})
+  @PostMapping(value = "/create") // , consumes = {"application/json;charset=UTF-8"})
   public ResponseEntity<Week> createWeek(
       @RequestBody Week week, @RequestHeader("token") String token) {
     if (!verifierRequest.isAdmin(token)) {
@@ -55,7 +69,7 @@ public class WeekController {
   }
 
   @CrossOrigin
-  @PostMapping(value = "/update")//, consumes = {"application/json;charset=UTF-8"})
+  @PostMapping(value = "/update") // , consumes = {"application/json;charset=UTF-8"})
   public ResponseEntity<Week> updateWeek(
       @RequestBody Week week, @RequestHeader("token") String token) {
     if (!verifierRequest.isAdmin(token)) {

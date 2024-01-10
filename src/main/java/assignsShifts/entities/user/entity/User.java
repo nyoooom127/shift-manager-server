@@ -74,7 +74,25 @@ public class User extends Model implements Cloneable {
   }
 
   public User hideAuthData() {
-    return this; // .toBuilder().authorizationData(null).build();
+    User clone =
+        User.builder()
+            .fullName(getFullName())
+            //                .authorizationData(getAuthorizationData())
+            .active(isActive())
+//            .shifts(getShifts())
+//            .constraints(getConstraints())
+            .numShifts(getNumShifts())
+            .numWeekendShifts(getNumWeekendShifts())
+            .isQualified(isQualified())
+            .avoidNight(isAvoidNight())
+            .initialScores(getInitialScores())
+            .types(getTypes())
+            .build();
+    // todo - find way to add to builder.
+    clone.setId(getId()); // Separate because it's a member of superclass Model
+
+    return clone;
+//    return this.toBuilder().authorizationData(null).build();
   }
 
   public void addShift(Shift shiftToAdd) {
@@ -112,6 +130,14 @@ public class User extends Model implements Cloneable {
     }
 
     return this.constraints;
+  }
+
+  public List<Shift> getShifts() {
+    if (this.shifts == null) {
+      this.shifts = new ArrayList<>();
+    }
+
+    return this.shifts;
   }
 
   public boolean isEnoughDaysSinceLastShift(ShiftType shiftType, Calendar startDate) {

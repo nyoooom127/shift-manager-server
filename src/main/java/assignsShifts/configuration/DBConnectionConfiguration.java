@@ -57,10 +57,10 @@ public class DBConnectionConfiguration {
             "mongodb+srv://%s:%s@%s/%s",this.databaseUsername, this.databasePassword, this.databaseAddress, this.databaseDatabase);
   }
 
-  @Bean
-  public MongoTemplate mongoTemplate() throws ValidationParamException {
-    return new MongoTemplate(new SimpleMongoClientDatabaseFactory(getConnectionString()));
-  }
+//  @Bean
+//  public MongoTemplate mongoTemplate() throws ValidationParamException {
+//    return new MongoTemplate(new SimpleMongoClientDatabaseFactory(getConnectionString()));
+//  }
 
 //  @Bean
 //  MongoMappingContext springDataMongoMappingContext() {

@@ -16,6 +16,13 @@ import java.util.Optional;
 public class UserService extends AbstractService<User> {
   @Autowired private UserRepository userRepository;
 
+  @Autowired private MongoUserRepository mongoUserRepository;
+
+  public List<User> findAllWithoutLists() {
+//      return mongoUserRepository.findAllIncludeAllButShiftsAndConstraintsFields();
+      return userRepository.findAllNoLists();
+  }
+
   public List<User> findByType(List<UserType> userTypes) {
     return this.userRepository.findByType(userTypes);
   }
