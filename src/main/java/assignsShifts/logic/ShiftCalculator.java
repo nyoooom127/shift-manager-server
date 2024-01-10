@@ -34,7 +34,9 @@ public class ShiftCalculator {
   }
 
   public Week calculateWeek(Week week, List<User> users) {
-    init(users, week.getType().getRequiredShifts(), week.getId());
+    init(users, week.getType().getRequiredShifts().stream()
+                    .filter(shiftType -> !ShiftSchedulingLogicEnum.MANUAL.equals(shiftType.getSchedulingLogic()))
+                    .collect(Collectors.toSet()), week.getId());
 
     System.out.printf("Received week with %d shifts%n", week.getShifts().size());
 
@@ -99,14 +101,13 @@ public class ShiftCalculator {
       List<User> usersForShiftType = filterUsersByShiftType(shiftType, potentialUsers);
       Map<Boolean, List<User>> splitUsersByQualification =
           splitUsersByQualification(shiftType, usersForShiftType);
-      Shift shift;
 
-      if (ShiftSchedulingLogicEnum.ROTATION.equals(shiftType.getSchedulingLogic())) {
-        //        shifts = getShiftsByRotation(week, shiftType);
-        shift = new Shift();
-      } else {
-        shift = getShiftByScore(shiftType, day, splitUsersByQualification);
-      }
+      Shift shift = switch (shiftType.getSchedulingLogic()) {
+        case SCORE -> getShiftByScore(shiftType, day, splitUsersByQualification);
+        case ROTATION -> new Shift(); // getShiftsByRotation(week, shiftType);
+        default -> throw new IllegalStateException("Unexpected value: " + shiftType.getSchedulingLogic());
+      };
+
       shifts.add(shift);
       shiftsGenerated++;
       //        shift.getUser().addShift(shift);
