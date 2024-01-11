@@ -20,23 +20,30 @@ public class ShiftCalculator {
   @Autowired private Gson gson;
 
   private List<User> allUsers;
-  private List<User> potentialUsers;
   private int shiftsGenerated;
   private List<ShiftType> shiftTypes;
   private String weekId;
 
   private void init(List<User> userList, Set<ShiftType> shiftTypes, String weekId) {
-    this.allUsers = new ArrayList<>(userList);
-    this.potentialUsers = new ArrayList<>(userList);
-    this.shiftTypes = new ArrayList<>(shiftTypes);
     this.shiftsGenerated = 0;
     this.weekId = weekId;
+    this.allUsers = removeCurrentWeekSavedShifts(userList, weekId);
+    this.shiftTypes = removeManualShiftTypes(shiftTypes);
+  }
+
+  private List<User> removeCurrentWeekSavedShifts(List<User> users, String weekIdToRemove){
+    return users.stream().map(user -> user.removeShiftsByWeekId(weekIdToRemove)).toList();
+  }
+
+  private List<ShiftType> removeManualShiftTypes(Set<ShiftType> shiftTypes){
+    return shiftTypes.stream()
+                     .filter(shiftType -> !ShiftSchedulingLogicEnum.MANUAL.equals(shiftType.getSchedulingLogic()))
+                     .distinct()
+                     .collect(Collectors.toList());
   }
 
   public Week calculateWeek(Week week, List<User> users) {
-    init(users, week.getType().getRequiredShifts().stream()
-                    .filter(shiftType -> !ShiftSchedulingLogicEnum.MANUAL.equals(shiftType.getSchedulingLogic()))
-                    .collect(Collectors.toSet()), week.getId());
+    init(users, week.getType().getRequiredShifts(), week.getId());
 
     System.out.printf("Received week with %d shifts%n", week.getShifts().size());
 
@@ -51,7 +58,7 @@ public class ShiftCalculator {
         shiftTypes.stream()
             .sorted((a, b) -> (int) Math.round(b.getScore() - a.getScore()))
             .toList()) {
-      List<User> usersForShiftType = filterUsersByShiftType(shiftType, potentialUsers);
+      List<User> usersForShiftType = filterUsersByShiftType(shiftType, allUsers);
       Map<Boolean, List<User>> splitUsersByQualification =
           splitUsersByQualification(shiftType, usersForShiftType);
       week.getShifts().addAll(getShiftsByScore(week, shiftType, splitUsersByQualification));
@@ -98,7 +105,7 @@ public class ShiftCalculator {
 
       System.out.println("No existing shift found, generating shift.");
 
-      List<User> usersForShiftType = filterUsersByShiftType(shiftType, potentialUsers);
+      List<User> usersForShiftType = filterUsersByShiftType(shiftType, allUsers);
       Map<Boolean, List<User>> splitUsersByQualification =
           splitUsersByQualification(shiftType, usersForShiftType);
 

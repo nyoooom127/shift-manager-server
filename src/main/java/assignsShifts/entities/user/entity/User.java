@@ -77,6 +77,12 @@ public class User extends Model implements Cloneable {
     return this; // .toBuilder().authorizationData(null).build();
   }
 
+  public User removeShiftsByWeekId(String weekId) {
+    this.shifts.removeIf(shift -> weekId.equals(shift.getWeek()));
+
+    return this;
+  }
+
   public void addShift(Shift shiftToAdd) {
     this.shifts.add(shiftToAdd);
 
@@ -174,7 +180,7 @@ public class User extends Model implements Cloneable {
       Calendar constraintEnd = Calendar.getInstance();
       constraintEnd.setTime(constraint.getEndDate());
 
-      if (isDateInRange(constraintStart, constraintEnd, shiftStart, shiftEnd)) {
+      if (isDateInRange(constraintStart, constraintEnd, shiftStartHourCal, shiftEnd)) {
         return true;
       }
     }
