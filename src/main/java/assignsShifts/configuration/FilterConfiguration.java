@@ -10,6 +10,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.filter.CorsFilter;
 import org.springframework.web.servlet.resource.ResourceHttpRequestHandler;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 @Configuration
@@ -34,7 +35,8 @@ public class FilterConfiguration {
         FilterRegistrationBean<CorsFilter> filterFilterRegistrationBean = new FilterRegistrationBean<>();
         ResourceHttpRequestHandler source = new ResourceHttpRequestHandler();
         CorsConfiguration corsConfiguration = new CorsConfiguration();
-        corsConfiguration.setAllowedOrigins(Collections.singletonList("*"));
+        corsConfiguration.setAllowedOrigins(Collections.singletonList("https://shiftmanager-409516.web.app/"));
+        // corsConfiguration.setAllowedOrigins(Arrays.asList("http://localhost:3000/", "https://shiftmanager-409516.web.app/"));
         corsConfiguration.setAllowedMethods(Collections.singletonList("*"));
         corsConfiguration.setAllowedHeaders(Collections.singletonList("*"));
         source.setCorsConfiguration(corsConfiguration);
@@ -44,4 +46,8 @@ public class FilterConfiguration {
 
         return filterFilterRegistrationBean;
     }
+
+//    cd C:\Projects\shift-manager-server
+//    gcloud app deploy
+//    gcloud app logs tail -s shift-manager-server
 }
