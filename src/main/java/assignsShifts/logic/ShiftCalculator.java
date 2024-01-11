@@ -166,9 +166,14 @@ public class ShiftCalculator {
       }
       System.out.println("No existing shift found, generating shift.");
       Shift shift = getShiftByScore(shiftType, day, splitUsersByQualification);
-      shifts.add(shift);
-      shiftsGenerated++;
-      //        shift.getUser().addShift(shift);
+
+      if (shift == null) {
+        System.out.println("No possible shift found, skipping.");
+      } else {
+        shifts.add(shift);
+        shiftsGenerated++;
+        //        shift.getUser().addShift(shift);
+      }
 
       day.add(Calendar.DATE, 1);
     }
@@ -194,6 +199,10 @@ public class ShiftCalculator {
               shiftType, day, unQualifiedUsersForShiftDate, splitUsersByQualification.get(false));
     }
 
+    if(user == null){
+      return null;
+    }
+
     Shift shift = new Shift(day.getTime(), shiftType, user.getId(), weekId);
     user.addShift(shift);
 
@@ -212,12 +221,11 @@ public class ShiftCalculator {
         .orElseGet(
             () ->
                 sortUsersByScore(shiftType, day, usersForShiftDate).stream()
-                    .findFirst()
-                    .orElseGet(
-                        () ->
-                            sortUsersByScore(shiftType, day, usersForShiftType).stream()
-                                .findFirst()
-                                .orElse(null)));
+                    .findFirst().orElse(null));
+//                    .orElseGet(
+//                        () ->
+//                            sortUsersByScore(shiftType, day, usersForShiftType).stream()
+//                                .findFirst().orElse(null));
   }
 
   private List<User> filterUsersByShiftType(ShiftType shiftType, List<User> users) {
