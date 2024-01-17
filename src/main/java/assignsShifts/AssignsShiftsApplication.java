@@ -7,7 +7,7 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
 
 @SpringBootApplication
-@EnableMongoRepositories
+//@EnableMongoRepositories
 @EnableAutoConfiguration(exclude={MongoAutoConfiguration.class})
 public class AssignsShiftsApplication {
   public static void main(String[] args) {
