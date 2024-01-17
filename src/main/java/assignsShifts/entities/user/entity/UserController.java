@@ -24,7 +24,30 @@ public class UserController {
       return ResponseEntity.ok().build();
     }
 
-    return ResponseEntity.ok(this.userService.findAll().stream().map(User::hideAuthData).toList());
+    List<User> users =
+        verifierRequest.isAdmin(token)
+            ? this.userService.findAll()
+            : this.userService.findAllWithoutLists();
+
+    return ResponseEntity.ok(
+        verifierRequest.isAdmin(token) ? users : users.stream().map(User::hideAuthData).toList());
+  }
+
+  @CrossOrigin
+  @GetMapping("/id")
+  public ResponseEntity<User> findById(
+      @RequestHeader("token") String token, @RequestParam("id") String id) {
+    if (!verifierRequest.isVerify(token, UserPermissionsEnum.USER, id)) {
+      return ResponseEntity.ok().build();
+    }
+
+    Optional<User> user = this.userService.findById(id);
+
+    if (user.isEmpty()) {
+      return ResponseEntity.ok().build();
+    }
+
+    return ResponseEntity.ok(user.get());
   }
 
   @CrossOrigin

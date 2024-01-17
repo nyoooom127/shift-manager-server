@@ -9,16 +9,28 @@ import assignsShifts.logic.ShiftCalculator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class WeekService extends AbstractService<Week> {
+  @Autowired WeekRepository weekRepository;
+
   @Autowired ShiftCalculator shiftCalculator;
 
   @Autowired UserService userService;
 
   @Autowired ShiftService shiftService;
+
+  public List<Week> findAllByDate(Date startDate) {
+    Calendar calendar = Calendar.getInstance();
+    calendar.setTime(startDate);
+    calendar.add(Calendar.MONTH, -1);
+    return this.weekRepository.findAllByDate(calendar.getTime());
+//    return super.findAll();
+  }
 
   public Week calculateWeek(Week week) {
     List<User> users = userService.findAll();
