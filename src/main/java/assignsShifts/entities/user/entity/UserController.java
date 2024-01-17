@@ -34,19 +34,6 @@ public class UserController {
   }
 
   @CrossOrigin
-  @GetMapping("/test")
-  public ResponseEntity<List<User>> findAllWithoutLists(@RequestHeader("token") String token) {
-    if (!verifierRequest.isVerify(token)) {
-      return ResponseEntity.ok().build();
-    }
-
-    List<User> users = this.userService.findAllWithoutLists();
-
-    return ResponseEntity.ok(
-        verifierRequest.isAdmin(token) ? users : users.stream().map(User::hideAuthData).toList());
-  }
-
-  @CrossOrigin
   @GetMapping("/id")
   public ResponseEntity<User> findById(
       @RequestHeader("token") String token, @RequestParam("id") String id) {
