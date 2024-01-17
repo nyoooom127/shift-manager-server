@@ -20,17 +20,26 @@ public class ShiftCalculator {
   @Autowired private Gson gson;
 
   private List<User> allUsers;
-  private List<User> potentialUsers;
   private int shiftsGenerated;
   private List<ShiftType> shiftTypes;
   private String weekId;
 
   private void init(List<User> userList, Set<ShiftType> shiftTypes, String weekId) {
-    this.allUsers = new ArrayList<>(userList);
-    this.potentialUsers = new ArrayList<>(userList);
-    this.shiftTypes = new ArrayList<>(shiftTypes);
     this.shiftsGenerated = 0;
     this.weekId = weekId;
+    this.allUsers = removeCurrentWeekSavedShifts(userList, weekId);
+    this.shiftTypes = removeManualShiftTypes(shiftTypes);
+  }
+
+  private List<User> removeCurrentWeekSavedShifts(List<User> users, String weekIdToRemove){
+    return users.stream().map(user -> user.removeShiftsByWeekId(weekIdToRemove)).toList();
+  }
+
+  private List<ShiftType> removeManualShiftTypes(Set<ShiftType> shiftTypes){
+    return shiftTypes.stream()
+                     .filter(shiftType -> !ShiftSchedulingLogicEnum.MANUAL.equals(shiftType.getSchedulingLogic()))
+                     .distinct()
+                     .collect(Collectors.toList());
   }
 
   public Week calculateWeek(Week week, List<User> users) {
@@ -49,7 +58,7 @@ public class ShiftCalculator {
         shiftTypes.stream()
             .sorted((a, b) -> (int) Math.round(b.getScore() - a.getScore()))
             .toList()) {
-      List<User> usersForShiftType = filterUsersByShiftType(shiftType, potentialUsers);
+      List<User> usersForShiftType = filterUsersByShiftType(shiftType, allUsers);
       Map<Boolean, List<User>> splitUsersByQualification =
           splitUsersByQualification(shiftType, usersForShiftType);
       week.getShifts().addAll(getShiftsByScore(week, shiftType, splitUsersByQualification));
@@ -96,17 +105,16 @@ public class ShiftCalculator {
 
       System.out.println("No existing shift found, generating shift.");
 
-      List<User> usersForShiftType = filterUsersByShiftType(shiftType, potentialUsers);
+      List<User> usersForShiftType = filterUsersByShiftType(shiftType, allUsers);
       Map<Boolean, List<User>> splitUsersByQualification =
           splitUsersByQualification(shiftType, usersForShiftType);
-      Shift shift;
 
-      if (ShiftSchedulingLogicEnum.ROTATION.equals(shiftType.getSchedulingLogic())) {
-        //        shifts = getShiftsByRotation(week, shiftType);
-        shift = new Shift();
-      } else {
-        shift = getShiftByScore(shiftType, day, splitUsersByQualification);
-      }
+      Shift shift = switch (shiftType.getSchedulingLogic()) {
+        case SCORE -> getShiftByScore(shiftType, day, splitUsersByQualification);
+        case ROTATION -> new Shift(); // getShiftsByRotation(week, shiftType);
+        default -> throw new IllegalStateException("Unexpected value: " + shiftType.getSchedulingLogic());
+      };
+
       shifts.add(shift);
       shiftsGenerated++;
       //        shift.getUser().addShift(shift);
@@ -158,9 +166,14 @@ public class ShiftCalculator {
       }
       System.out.println("No existing shift found, generating shift.");
       Shift shift = getShiftByScore(shiftType, day, splitUsersByQualification);
-      shifts.add(shift);
-      shiftsGenerated++;
-      //        shift.getUser().addShift(shift);
+
+      if (shift == null) {
+        System.out.println("No possible shift found, skipping.");
+      } else {
+        shifts.add(shift);
+        shiftsGenerated++;
+        //        shift.getUser().addShift(shift);
+      }
 
       day.add(Calendar.DATE, 1);
     }
@@ -186,6 +199,10 @@ public class ShiftCalculator {
               shiftType, day, unQualifiedUsersForShiftDate, splitUsersByQualification.get(false));
     }
 
+    if(user == null){
+      return null;
+    }
+
     Shift shift = new Shift(day.getTime(), shiftType, user.getId(), weekId);
     user.addShift(shift);
 
@@ -204,12 +221,11 @@ public class ShiftCalculator {
         .orElseGet(
             () ->
                 sortUsersByScore(shiftType, day, usersForShiftDate).stream()
-                    .findFirst()
-                    .orElseGet(
-                        () ->
-                            sortUsersByScore(shiftType, day, usersForShiftType).stream()
-                                .findFirst()
-                                .orElse(null)));
+                    .findFirst().orElse(null));
+//                    .orElseGet(
+//                        () ->
+//                            sortUsersByScore(shiftType, day, usersForShiftType).stream()
+//                                .findFirst().orElse(null));
   }
 
   private List<User> filterUsersByShiftType(ShiftType shiftType, List<User> users) {
