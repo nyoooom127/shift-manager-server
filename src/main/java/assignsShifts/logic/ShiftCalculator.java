@@ -291,16 +291,16 @@ public class ShiftCalculator {
     return users.stream()
         .sorted(
             (a, b) -> {
-              int numUpcomingConstraintsA = a.getNumUpcomingConstraints(date);
-              int numUpcomingConstraintsB = b.getNumUpcomingConstraints(date);
+              double scoreA = a.getShiftScore(shiftType);
+              double scoreB = b.getShiftScore(shiftType);
 
-              if (numUpcomingConstraintsA != numUpcomingConstraintsB) {
-                return numUpcomingConstraintsB - numUpcomingConstraintsA;
+              if(scoreA != scoreB){
+                double diff = a.getShiftScore(shiftType) - b.getShiftScore(shiftType);
+
+                return (int) (diff > 0 ? Math.ceil(diff) : Math.floor(diff));
               }
 
-              double diff = a.getShiftScore(shiftType) - b.getShiftScore(shiftType);
-
-              return (int) (diff > 0 ? Math.ceil(diff) : Math.floor(diff));
+                return b.getNumUpcomingConstraints(date) - a.getNumUpcomingConstraints(date);
             })
         .collect(Collectors.toList());
   }
