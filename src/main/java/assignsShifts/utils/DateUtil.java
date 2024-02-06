@@ -3,8 +3,24 @@ package assignsShifts.utils;
 import java.time.Duration;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.TimeZone;
 
 public class DateUtil {
+
+  public static Calendar getCalendar() {
+    TimeZone timeZone = TimeZone.getTimeZone("Asia/Jerusalem");
+    Calendar calendar = Calendar.getInstance();
+    calendar.setTimeZone(timeZone);
+
+    return calendar;
+  }
+
+  public static Calendar getCalendar(Date date) {
+    Calendar calendar = getCalendar();
+    calendar.setTime(date);
+
+    return calendar;
+  }
 
   public static boolean isCalendarEquals(Calendar calendar1, Calendar calendar2) {
     return calendar1.get(Calendar.YEAR) == calendar2.get(Calendar.YEAR)
@@ -17,7 +33,7 @@ public class DateUtil {
   }
 
   public static boolean isDateInRange(Calendar start, Duration duration, Calendar dateToCheck) {
-    Calendar end = Calendar.getInstance();
+    Calendar end = DateUtil.getCalendar();
     end.setTimeInMillis(start.toInstant().plus(duration).toEpochMilli());
 
     return isDateInRange(start, end, dateToCheck, dateToCheck);
@@ -25,7 +41,7 @@ public class DateUtil {
 
   public static boolean isDateInRange(
       Calendar start, Duration duration, Calendar startDateToCheck, Calendar endDateToCheck) {
-    Calendar end = Calendar.getInstance();
+    Calendar end = DateUtil.getCalendar();
     end.setTimeInMillis(start.toInstant().plus(duration).toEpochMilli());
 
     return isDateInRange(start, end, startDateToCheck, endDateToCheck);
@@ -37,8 +53,7 @@ public class DateUtil {
   }
 
   public static boolean isWeekend(Date date) {
-    Calendar calendar = Calendar.getInstance();
-    calendar.setTime(date);
+    Calendar calendar = DateUtil.getCalendar(date);
 
     return isWeekend(calendar);
   }
@@ -50,15 +65,13 @@ public class DateUtil {
   }
 
   public static boolean isTomorrowWeekend(Date date) {
-    Calendar calendar = Calendar.getInstance();
-    calendar.setTime(date);
+    Calendar calendar = DateUtil.getCalendar(date);
 
     return isTomorrowWeekend(calendar);
   }
 
   public static boolean isTomorrowWeekend(Calendar date) {
-    Calendar tomorrow = Calendar.getInstance();
-    tomorrow.setTime(date.getTime());
+    Calendar tomorrow = DateUtil.getCalendar(date.getTime());
     tomorrow.add(Calendar.DATE, 1);
 
     return isWeekend(tomorrow);
