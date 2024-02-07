@@ -188,11 +188,13 @@ public class ShiftCalculator {
         filterUsersByShiftDates(shiftType, day, splitUsersByQualification.get(true));
     List<User> unQualifiedUsersForShiftDate =
         filterUsersByShiftDates(shiftType, day, splitUsersByQualification.get(false));
+    boolean isQualified = false;
 
     if (unQualifiedUsersForShiftDate.isEmpty()) {
       user =
           getUserForShift(
               shiftType, day, qualifiedUsersForShiftDate, splitUsersByQualification.get(true));
+      isQualified = true;
     } else {
       user =
           getUserForShift(
@@ -203,7 +205,11 @@ public class ShiftCalculator {
       return null;
     }
 
-    Shift shift = new Shift(day.getTime(), shiftType, user.getId(), weekId);
+    boolean isFromHome = isQualified &&
+            shiftType.isDefaultFromHome() &&
+            (shiftType.isNight() || (shiftType.isHasWeekends() && DateUtil.isWeekend(day)));
+
+    Shift shift = new Shift(day.getTime(), shiftType, user.getId(), weekId, isFromHome);
     user.addShift(shift);
 
     return shift;

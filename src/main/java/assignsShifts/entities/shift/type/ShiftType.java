@@ -37,6 +37,9 @@ public class ShiftType extends Model {
 
   @JsonProperty("isNight")
   private boolean isNight;
+
+  @JsonProperty("isDefaultFromHome")
+  private boolean isDefaultFromHome;
   //  @DBRef private List<User> rotationUsers;
 
   public ShiftType(
@@ -52,7 +55,8 @@ public class ShiftType extends Model {
       ShiftSchedulingLogicEnum schedulingLogic,
       int displayOrder,
       boolean isNeedQualified,
-      boolean isNight
+      boolean isNight,
+      boolean isDefaultFromHome
       //      List<User> rotationUsers
       ) {
     super(id);
@@ -68,6 +72,7 @@ public class ShiftType extends Model {
     this.displayOrder = displayOrder;
     this.isNeedQualified = isNeedQualified;
     this.isNight = isNight;
+    this.isDefaultFromHome = isDefaultFromHome;
     //    this.rotationUsers = rotationUsers;
   }
 

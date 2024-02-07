@@ -85,4 +85,8 @@ public class UserService extends AbstractService<User> {
   public Optional<User> removeShift(String userId, String shiftId) {
     return this.userRepository.removeShift(userId, shiftId);
   }
+
+  public Optional<User> updateNumShifts(String userId, Shift shift, Shift existingShift) {
+      return this.userRepository.updateNumShifts(userId, shift, existingShift);
+  }
 }

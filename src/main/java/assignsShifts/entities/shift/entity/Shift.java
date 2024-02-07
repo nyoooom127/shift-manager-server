@@ -2,6 +2,7 @@ package assignsShifts.entities.shift.entity;
 
 import assignsShifts.entities.shift.type.ShiftType;
 import assignsShifts.models.Model;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,12 +22,16 @@ public class Shift extends Model {
   private String user;
   private String week;
 
-  public Shift(String id, Date startDate, ShiftType type, String user, String week) {
+  @JsonProperty("isFromHome")
+  private boolean isFromHome;
+
+  public Shift(String id, Date startDate, ShiftType type, String user, String week, boolean isFromHome) {
     super(id);
     this.startDate = startDate;
     this.type = type;
     this.user = user;
     this.week = week;
+    this.isFromHome = isFromHome;
   }
 
   public static int compareByDate(Shift a, Shift b) {
