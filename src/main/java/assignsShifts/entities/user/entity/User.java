@@ -108,25 +108,23 @@ public class User extends Model implements Cloneable {
   }
 
   public void addToNumShifts(Shift shiftToAdd) {
-    NumShifts numShifts;
+    Map<String, NumShifts> numShiftsMap;
 
     if (DateUtil.isWeekend(shiftToAdd.getStartDate())) {
-      numShifts = this.numWeekendShifts.getOrDefault(shiftToAdd.getType().getId(), new NumShifts());
-
-      //      this.numWeekendShifts.put(shiftToAdd.getType().getId(), currentNum + 1);
+      numShiftsMap = this.numWeekendShifts;
     } else {
-      numShifts = this.numShifts.getOrDefault(shiftToAdd.getType().getId(), new NumShifts());
-      //      Integer currentNum = this.numShifts.getOrDefault(shiftToAdd.getType().getId(), 0);
-      //      this.numShifts.put(shiftToAdd.getType().getId(), currentNum + 1);
+      numShiftsMap = this.numShifts;
     }
 
+    NumShifts numShifts = numShiftsMap.getOrDefault(shiftToAdd.getType().getId(), new NumShifts());
+
     if (shiftToAdd.isFromHome()) {
-      //      Integer currentNum =
-      // this.numWeekendShifts.getOrDefault(shiftToAdd.getType().getId(), 0);
       numShifts.home += 1;
     } else {
       numShifts.normal += 1;
     }
+
+    numShiftsMap.put(shiftToAdd.getType().getId(), numShifts);
   }
 
   public void removeShift(Shift shiftToRemove) {
@@ -141,35 +139,21 @@ public class User extends Model implements Cloneable {
   }
 
   public void removeFromNumShifts(Shift shiftToRemove) {
-    NumShifts numShifts;
+    Map<String, NumShifts> numShiftsMap;
 
     if (DateUtil.isWeekend(shiftToRemove.getStartDate())) {
-      numShifts =
-          this.numWeekendShifts.getOrDefault(shiftToRemove.getType().getId(), new NumShifts(1));
-
-      //      this.numWeekendShifts.put(shiftToAdd.getType().getId(), currentNum + 1);
+      numShiftsMap = this.numWeekendShifts;
     } else {
-      numShifts = this.numShifts.getOrDefault(shiftToRemove.getType().getId(), new NumShifts(1));
-      //      Integer currentNum = this.numShifts.getOrDefault(shiftToAdd.getType().getId(), 0);
-      //      this.numShifts.put(shiftToAdd.getType().getId(), currentNum + 1);
+      numShiftsMap = this.numShifts;
     }
+
+    NumShifts numShifts = numShiftsMap.getOrDefault(shiftToRemove.getType().getId(), new NumShifts());
 
     if (shiftToRemove.isFromHome()) {
-      //      Integer currentNum =
-      // this.numWeekendShifts.getOrDefault(shiftToAdd.getType().getId(), 0);
-      numShifts.home -= 1;
+      numShifts.setHome(Math.max(0, numShifts.home - 1));
     } else {
-      numShifts.normal -= 1;
+      numShifts.setNormal(Math.max(0, numShifts.normal - 1));
     }
-
-    //    if (DateUtil.isWeekend(shiftToRemove.getStartDate())) {
-    //      Integer currentNum = this.numWeekendShifts.getOrDefault(shiftToRemove.getType().getId(),
-    // 1);
-    //      this.numWeekendShifts.put(shiftToRemove.getType().getId(), currentNum - 1);
-    //    } else {
-    //      Integer currentNum = this.numShifts.getOrDefault(shiftToRemove.getType().getId(), 1);
-    //      this.numShifts.put(shiftToRemove.getType().getId(), currentNum - 1);
-    //    }
   }
 
   public List<Constraint> getConstraints() {
@@ -374,18 +358,10 @@ public class User extends Model implements Cloneable {
   public static class NumShifts {
     private Integer normal;
     private Integer home;
-    //    private Integer alone;
 
     public NumShifts() {
       this.normal = 0;
       this.home = 0;
-      //      this.alone = 0;
-    }
-
-    public NumShifts(Integer init) {
-      this.normal = init;
-      this.home = init;
-      //      this.alone = init;
     }
   }
 }

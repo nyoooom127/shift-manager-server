@@ -2,6 +2,7 @@ package assignsShifts.entities.shift.entity;
 
 import assignsShifts.entities.shift.type.ShiftType;
 import assignsShifts.models.Model;
+import assignsShifts.utils.DateUtil;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -36,7 +37,22 @@ public class Shift extends Model {
     this.isFromHome = isFromHome;
   }
 
+  public Shift(Date startDate, ShiftType type, String week, boolean isFromHome) {
+    super();
+    this.startDate = startDate;
+    this.type = type;
+    this.week = week;
+    this.isFromHome = isFromHome;
+  }
+
   public static int compareByDate(Shift a, Shift b) {
     return a.getStartDate().compareTo(b.getStartDate());
+  }
+
+  public Double calculateScore(boolean isUserQualified) {
+    double initialScore =
+        DateUtil.isWeekend(getStartDate()) ? getType().getWeekendScore() : getType().getScore();
+
+    return isUserQualified && isFromHome() ? initialScore * 0.5 : initialScore;
   }
 }
