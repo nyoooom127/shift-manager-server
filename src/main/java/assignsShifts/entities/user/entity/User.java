@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 import static assignsShifts.utils.DateUtil.isDateInRange;
 
 @Data
-@Document("users1")
+@Document("users")
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder(toBuilder = true)
