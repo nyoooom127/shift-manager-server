@@ -5,6 +5,7 @@ import assignsShifts.entities.constraint.entity.Constraint;
 import assignsShifts.entities.shift.entity.Shift;
 import assignsShifts.entities.shift.type.ShiftType;
 import assignsShifts.entities.user.type.UserType;
+import assignsShifts.models.Model;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -52,7 +53,10 @@ public class UserService extends AbstractService<User> {
                       user ->
                           user.getTypes().stream()
                               .anyMatch(
-                                  userType -> userType.getAllowedShiftTypes().contains(shiftType)))
+                                  userType ->
+                                      userType.getAllowedShiftTypes().stream()
+                                          .map(Model::getId)
+                                          .anyMatch(id -> id.equals(shiftType.getId()))))
                   .map(user -> user.getShiftScore(shiftType, true))
                   .sorted()
                   .toList();
@@ -87,6 +91,6 @@ public class UserService extends AbstractService<User> {
   }
 
   public Optional<User> updateNumShifts(String userId, Shift shift, Shift existingShift) {
-      return this.userRepository.updateNumShifts(userId, shift, existingShift);
+    return this.userRepository.updateNumShifts(userId, shift, existingShift);
   }
 }
