@@ -4,6 +4,7 @@ import assignsShifts.entities.shift.entity.Shift;
 import assignsShifts.entities.shift.type.ShiftType;
 import assignsShifts.entities.week.type.WeekType;
 import assignsShifts.models.Model;
+import assignsShifts.utils.DateUtil;
 import com.mongodb.lang.NonNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -39,8 +40,7 @@ public class Week extends Model {
     return shifts.stream()
         .filter(
             shift -> {
-              Calendar shiftStartCalendar = Calendar.getInstance();
-              shiftStartCalendar.setTime(shift.getStartDate());
+              Calendar shiftStartCalendar = DateUtil.getCalendar(shift.getStartDate());
 
               return shiftType.equals(shift.getType()) && shiftStartDate.get(Calendar.YEAR) == shiftStartCalendar.get(Calendar.YEAR) &&
                       shiftStartDate.get(Calendar.DAY_OF_YEAR) == shiftStartCalendar.get(Calendar.DAY_OF_YEAR);

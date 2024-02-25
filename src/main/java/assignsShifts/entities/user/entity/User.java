@@ -243,10 +243,8 @@ public class User extends Model implements Cloneable {
     shiftEnd.add(Calendar.HOUR_OF_DAY, (int) Math.round(shiftDuration));
 
     for (Constraint constraint : this.getConstraints()) {
-      Calendar constraintStart = Calendar.getInstance();
-      constraintStart.setTime(constraint.getStartDate());
-      Calendar constraintEnd = Calendar.getInstance();
-      constraintEnd.setTime(constraint.getEndDate());
+      Calendar constraintStart = DateUtil.getCalendar(constraint.getStartDate());
+      Calendar constraintEnd = DateUtil.getCalendar(constraint.getEndDate());
 
       if (isDateInRange(constraintStart, constraintEnd, shiftStartHourCal, shiftEnd)) {
         return true;

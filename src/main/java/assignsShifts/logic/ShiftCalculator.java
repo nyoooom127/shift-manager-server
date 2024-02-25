@@ -47,8 +47,7 @@ public class ShiftCalculator {
 
     System.out.printf("Received week with %d shifts%n", week.getShifts().size());
 
-    Calendar day = Calendar.getInstance();
-    day.setTime(week.getStartDate());
+    Calendar day = DateUtil.getCalendar(week.getStartDate());
 
     processExistingShifts(week.getShifts());
 
@@ -78,8 +77,7 @@ public class ShiftCalculator {
 
   private List<Shift> getWeekendShifts(Week week) {
     List<Shift> shifts = new ArrayList<>();
-    Calendar day = Calendar.getInstance();
-    day.setTime(week.getStartDate());
+    Calendar day = DateUtil.getCalendar(week.getStartDate());
     day.add(Calendar.DATE, 5);
 
     for (int numDay = 0; numDay < 2; numDay++) {
@@ -151,8 +149,7 @@ public class ShiftCalculator {
   private List<Shift> getShiftsByScore(
       Week week, ShiftType shiftType, Map<Boolean, List<User>> splitUsersByQualification) {
     List<Shift> shifts = new ArrayList<>();
-    Calendar day = Calendar.getInstance();
-    day.setTime(week.getStartDate());
+    Calendar day = DateUtil.getCalendar(week.getStartDate());
 
     for (int numDay = 0; numDay < 5; numDay++) {
       Optional<Shift> existingShift = week.getShift(shiftType, day);

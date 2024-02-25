@@ -6,6 +6,7 @@ import assignsShifts.entities.shift.entity.ShiftService;
 import assignsShifts.entities.user.entity.User;
 import assignsShifts.entities.user.entity.UserService;
 import assignsShifts.logic.ShiftCalculator;
+import assignsShifts.utils.DateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,8 +26,7 @@ public class WeekService extends AbstractService<Week> {
   @Autowired ShiftService shiftService;
 
   public List<Week> findAllByDate(Date startDate) {
-    Calendar calendar = Calendar.getInstance();
-    calendar.setTime(startDate);
+    Calendar calendar = DateUtil.getCalendar(startDate);
     calendar.add(Calendar.MONTH, -1);
     return this.weekRepository.findAllByDate(calendar.getTime());
 //    return super.findAll();
