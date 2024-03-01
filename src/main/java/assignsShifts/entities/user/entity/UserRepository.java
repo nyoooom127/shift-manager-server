@@ -133,6 +133,20 @@ public class UserRepository extends AbstractRepository<User> {
     return this.save(user);
   }
 
+  public Optional<User> updateNumShifts(String userId, Shift shift, Shift existingShift) {
+    Optional<User> optionalUser = this.findById(userId);
+
+    if (optionalUser.isEmpty()) {
+      return Optional.empty();
+    }
+
+    User user = optionalUser.get();
+    user.removeFromNumShifts(existingShift);
+    user.addToNumShifts(shift);
+
+    return this.save(user);
+  }
+
   public boolean isVerify(String userId, UserPermissionsEnum userPermissionsEnum) {
     User user = this.mongoTemplate.findById(userId, User.class);
 

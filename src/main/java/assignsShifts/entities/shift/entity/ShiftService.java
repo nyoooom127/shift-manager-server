@@ -31,6 +31,8 @@ public class ShiftService extends AbstractService<Shift> {
     if (!existingShift.get().getUser().equals(entity.getUser())) {
       userService.removeShift(existingShift.get().getUser(), existingShift.get().getId());
       userService.addShift(entity.getUser(), entity);
+    }else if(existingShift.get().isFromHome() != entity.isFromHome()){
+      userService.updateNumShifts(entity.getUser(), entity, existingShift.get());
     }
 
     return super.update(entity);

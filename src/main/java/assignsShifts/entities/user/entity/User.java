@@ -30,8 +30,8 @@ import static assignsShifts.utils.DateUtil.isDateInRange;
 public class User extends Model implements Cloneable {
   private String fullName;
   @DBRef private List<UserType> types;
-  private Map<String, Integer> numShifts;
-  private Map<String, Integer> numWeekendShifts;
+  private Map<String, NumShifts> numShifts;
+  private Map<String, NumShifts> numWeekendShifts;
   Map<String, Double> initialScores;
   private AuthorizationData authorizationData;
   @DBRef private List<Constraint> constraints;
@@ -48,8 +48,8 @@ public class User extends Model implements Cloneable {
       String id,
       @NonNull String fullName,
       List<UserType> types,
-      Map<String, Integer> numShifts,
-      Map<String, Integer> numWeekendShifts,
+      Map<String, NumShifts> numShifts,
+      Map<String, NumShifts> numWeekendShifts,
       Map<String, Double> initialScores,
       AuthorizationData authorizationData,
       @NonNull List<Constraint> constraints,
@@ -79,8 +79,8 @@ public class User extends Model implements Cloneable {
             .fullName(getFullName())
             //                .authorizationData(getAuthorizationData())
             .active(isActive())
-//            .shifts(getShifts())
-//            .constraints(getConstraints())
+            //            .shifts(getShifts())
+            //            .constraints(getConstraints())
             .numShifts(getNumShifts())
             .numWeekendShifts(getNumWeekendShifts())
             .isQualified(isQualified())
@@ -92,7 +92,7 @@ public class User extends Model implements Cloneable {
     clone.setId(getId()); // Separate because it's a member of superclass Model
 
     return clone;
-//    return this.toBuilder().authorizationData(null).build();
+    //    return this.toBuilder().authorizationData(null).build();
   }
 
   public User removeShiftsByWeekId(String weekId) {
@@ -104,13 +104,27 @@ public class User extends Model implements Cloneable {
   public void addShift(Shift shiftToAdd) {
     this.shifts.add(shiftToAdd);
 
+    addToNumShifts(shiftToAdd);
+  }
+
+  public void addToNumShifts(Shift shiftToAdd) {
+    Map<String, NumShifts> numShiftsMap;
+
     if (DateUtil.isWeekend(shiftToAdd.getStartDate())) {
-      Integer currentNum = this.numWeekendShifts.getOrDefault(shiftToAdd.getType().getId(), 0);
-      this.numWeekendShifts.put(shiftToAdd.getType().getId(), currentNum + 1);
+      numShiftsMap = this.numWeekendShifts;
     } else {
-      Integer currentNum = this.numShifts.getOrDefault(shiftToAdd.getType().getId(), 0);
-      this.numShifts.put(shiftToAdd.getType().getId(), currentNum + 1);
+      numShiftsMap = this.numShifts;
     }
+
+    NumShifts numShifts = numShiftsMap.getOrDefault(shiftToAdd.getType().getId(), new NumShifts());
+
+    if (shiftToAdd.isFromHome()) {
+      numShifts.home += 1;
+    } else {
+      numShifts.normal += 1;
+    }
+
+    numShiftsMap.put(shiftToAdd.getType().getId(), numShifts);
   }
 
   public void removeShift(Shift shiftToRemove) {
@@ -121,12 +135,24 @@ public class User extends Model implements Cloneable {
       return;
     }
 
+    removeFromNumShifts(shiftToRemove);
+  }
+
+  public void removeFromNumShifts(Shift shiftToRemove) {
+    Map<String, NumShifts> numShiftsMap;
+
     if (DateUtil.isWeekend(shiftToRemove.getStartDate())) {
-      Integer currentNum = this.numWeekendShifts.getOrDefault(shiftToRemove.getType().getId(), 1);
-      this.numWeekendShifts.put(shiftToRemove.getType().getId(), currentNum - 1);
+      numShiftsMap = this.numWeekendShifts;
     } else {
-      Integer currentNum = this.numShifts.getOrDefault(shiftToRemove.getType().getId(), 1);
-      this.numShifts.put(shiftToRemove.getType().getId(), currentNum - 1);
+      numShiftsMap = this.numShifts;
+    }
+
+    NumShifts numShifts = numShiftsMap.getOrDefault(shiftToRemove.getType().getId(), new NumShifts());
+
+    if (shiftToRemove.isFromHome()) {
+      numShifts.setHome(Math.max(0, numShifts.home - 1));
+    } else {
+      numShifts.setNormal(Math.max(0, numShifts.normal - 1));
     }
   }
 
@@ -256,8 +282,15 @@ public class User extends Model implements Cloneable {
     return Optional.ofNullable(getInitialScores())
             .map(initScores -> initScores.getOrDefault(shiftType.getId(), 0.0))
             .orElse(0.0)
-        + getNumShifts().getOrDefault(shiftType.getId(), 0) * shiftType.getScore()
-        + getNumWeekendShifts().getOrDefault(shiftType.getId(), 0) * shiftType.getWeekendScore();
+        + getNumShiftsScore(
+            getNumShifts().getOrDefault(shiftType.getId(), new NumShifts()), shiftType.getScore())
+        + getNumShiftsScore(
+            getNumWeekendShifts().getOrDefault(shiftType.getId(), new NumShifts()),
+            shiftType.getWeekendScore());
+  }
+
+  private double getNumShiftsScore(NumShifts numShifts, double shiftTypeScore) {
+    return (numShifts.getNormal() * shiftTypeScore) + (numShifts.getHome() * shiftTypeScore * 0.5);
   }
 
   public User cloneWithoutLists() {
@@ -318,5 +351,17 @@ public class User extends Model implements Cloneable {
     //    public void setPassword( String password) {
     //      this.password = password;
     //    }
+  }
+
+  @Data
+  @AllArgsConstructor
+  public static class NumShifts {
+    private Integer normal;
+    private Integer home;
+
+    public NumShifts() {
+      this.normal = 0;
+      this.home = 0;
+    }
   }
 }

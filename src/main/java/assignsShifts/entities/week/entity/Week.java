@@ -42,8 +42,10 @@ public class Week extends Model {
             shift -> {
               Calendar shiftStartCalendar = DateUtil.getCalendar(shift.getStartDate());
 
-              return shiftType.equals(shift.getType()) && shiftStartDate.get(Calendar.YEAR) == shiftStartCalendar.get(Calendar.YEAR) &&
-                      shiftStartDate.get(Calendar.DAY_OF_YEAR) == shiftStartCalendar.get(Calendar.DAY_OF_YEAR);
+              return shiftType.getId().equals(shift.getType().getId())
+                  && shiftStartDate.get(Calendar.YEAR) == shiftStartCalendar.get(Calendar.YEAR)
+                  && shiftStartDate.get(Calendar.DAY_OF_YEAR)
+                      == shiftStartCalendar.get(Calendar.DAY_OF_YEAR);
             })
         .findFirst();
   }

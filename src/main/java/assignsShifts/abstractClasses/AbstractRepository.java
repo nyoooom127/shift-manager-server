@@ -21,6 +21,20 @@ public abstract class AbstractRepository<T extends Model> {
     return Optional.ofNullable(this.mongoTemplate.findById(id, getType()));
   }
 
+  public Optional<T> findByIdInclude(String id, String... include) {
+    Query query = Query.query(Criteria.where("_id").is(id));
+    query.fields().include(include);
+
+    return Optional.ofNullable(this.mongoTemplate.findOne(query, getType()));
+  }
+
+  public Optional<T> findByIdExclude(String id, String... exclude) {
+    Query query = Query.query(Criteria.where("_id").is(id));
+    query.fields().exclude(exclude);
+
+    return Optional.ofNullable(this.mongoTemplate.findOne(query, getType()));
+  }
+
   public Optional<T> save(T entity) {
     return Optional.of(this.mongoTemplate.save(entity));
   }
