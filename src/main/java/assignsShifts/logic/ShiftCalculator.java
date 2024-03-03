@@ -80,8 +80,9 @@ public class ShiftCalculator {
 
         System.out.println("No existing shift found, generating shift.");
 
-        boolean isFromHome = shiftType.isDefaultFromHome() &&
-                (shiftType.isNight() || (shiftType.isHasWeekends() && DateUtil.isWeekend(day)));
+        boolean isFromHome = (shiftType.isHasWeekends() && DateUtil.isWeekend(day))
+                ? shiftType.isDefaultWeekendFromHome()
+                : shiftType.isDefaultWeekdayFromHome();
         Shift shift = new Shift(day.getTime(), shiftType, weekId, isFromHome);
 
         shifts.add(shift);
