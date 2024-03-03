@@ -38,8 +38,11 @@ public class ShiftType extends Model {
   @JsonProperty("isNight")
   private boolean isNight;
 
-  @JsonProperty("isDefaultFromHome")
-  private boolean isDefaultFromHome;
+  @JsonProperty("isDefaultWeekdayFromHome")
+  private boolean isDefaultWeekdayFromHome;
+
+  @JsonProperty("isDefaultWeekendFromHome")
+  private boolean isDefaultWeekendFromHome;
   //  @DBRef private List<User> rotationUsers;
 
   public ShiftType(
@@ -56,7 +59,8 @@ public class ShiftType extends Model {
       int displayOrder,
       boolean isNeedQualified,
       boolean isNight,
-      boolean isDefaultFromHome
+      boolean isDefaultWeekdayFromHome,
+      boolean isDefaultWeekendFromHome
       //      List<User> rotationUsers
       ) {
     super(id);
@@ -72,7 +76,8 @@ public class ShiftType extends Model {
     this.displayOrder = displayOrder;
     this.isNeedQualified = isNeedQualified;
     this.isNight = isNight;
-    this.isDefaultFromHome = isDefaultFromHome;
+    this.isDefaultWeekdayFromHome = isDefaultWeekdayFromHome;
+    this.isDefaultWeekendFromHome = isDefaultWeekendFromHome;
     //    this.rotationUsers = rotationUsers;
   }
 
